@@ -76,6 +76,12 @@ export default function ChatRoom({ username, onLeave }) {
 
       if (data && data.length > 0) {
         const reversed = [...data].reverse();
+        
+        // Temporarily bypass smooth scrolling during historical prepending
+        if (container) {
+          container.style.scrollBehavior = 'auto';
+        }
+        
         setMessages((prev) => [...reversed, ...prev]);
 
         if (data.length < 20) {
@@ -87,6 +93,8 @@ export default function ChatRoom({ username, onLeave }) {
           if (container) {
             const newScrollHeight = container.scrollHeight;
             container.scrollTop = newScrollHeight - scrollHeightBefore + scrollTopBefore;
+            // Restore smooth scrolling for new messages
+            container.style.scrollBehavior = 'smooth';
           }
         }, 50);
       } else {
@@ -503,7 +511,7 @@ export default function ChatRoom({ username, onLeave }) {
         <div 
           ref={chatContainerRef}
           onScroll={handleScroll}
-          className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hidden"
+          className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hidden scroll-smooth"
         >
           {loadingMore && (
             <div className="flex items-center justify-center py-2 animate-pulse">

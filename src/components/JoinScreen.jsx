@@ -13,7 +13,7 @@ const DEEPLINK_MEMBERS = [
   { id: 'anstik', name: 'Anstik', avatar: '👽', status: 'Void Walker' },
   { id: 'anshik', name: 'Anshik', avatar: '🚀', status: 'Rocket Engineer' },
   { id: 'ayush', name: 'Ayush', avatar: '👑', status: 'The Spark' },
-  { id: 'himanshu', name: 'Himanshu HDR', avatar: '🌟', status: 'Cosmic Star' }
+  { id: 'himanshu', name: 'Himanshu HDR (Bhaiya)', avatar: '🌟', status: 'Cosmic Star' }
 ];
 
 export default function JoinScreen({ onJoin }) {
@@ -207,8 +207,12 @@ export default function JoinScreen({ onJoin }) {
     setIsVerifying(true);
     setError('');
 
-    // Verification formula: name + "@321" (e.g. nitin@321 for Nitin), custom password for Himanshu
-    const expectedPassword = selectedRole.id === 'himanshu' ? 'hdr123' : `${selectedRole.id}@321`;
+    // Custom passcodes for specific members, default to formula name@321 otherwise
+    const expectedPassword = selectedRole.id === 'himanshu'
+      ? 'hdr123'
+      : selectedRole.id === 'aryan'
+        ? 'aryanaryan'
+        : `${selectedRole.id}@321`;
 
     setTimeout(() => {
       if (password === expectedPassword) {
@@ -326,7 +330,7 @@ export default function JoinScreen({ onJoin }) {
               <form onSubmit={handleVerifyAndJoin} className="space-y-4 mt-4">
                 <div className="space-y-2">
                   <label className="text-xs font-extrabold text-slate-600 uppercase tracking-wider block">
-                    {selectedRole.id === 'himanshu'
+                    {['himanshu', 'aryan'].includes(selectedRole.id)
                       ? "2. Enter Personal Link Passcode"
                       : "2. Enter Personal Link Passcode (Formula: name@321)"}
                   </label>
@@ -335,7 +339,7 @@ export default function JoinScreen({ onJoin }) {
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder={selectedRole.id === 'himanshu' ? "Enter your passcode" : "e.g. nitin@321"}
+                      placeholder={['himanshu', 'aryan'].includes(selectedRole.id) ? "Enter your passcode" : "e.g. nitin@321"}
                       required
                       autoFocus
                       className="w-full glass-input rounded-2xl py-3.5 px-4 pr-12 text-sm focus:ring-1 focus:ring-indigo-500"

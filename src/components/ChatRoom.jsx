@@ -16,6 +16,7 @@ const ROLE_AVATARS = {
   Anstik: '👽',
   Anshik: '🚀',
   Ayush: '👑',
+  'Himanshu HDR (Bhaiya)': '🌟',
   'Himanshu HDR': '🌟',
   Himanshu: '🌟'
 };
@@ -29,6 +30,7 @@ const ROLE_COLORS = {
   Anstik: 'text-teal-600 border-teal-100 bg-teal-50/40',
   Anshik: 'text-fuchsia-600 border-fuchsia-100 bg-fuchsia-50/40',
   Ayush: 'text-emerald-600 border-emerald-100 bg-emerald-50/40',
+  'Himanshu HDR (Bhaiya)': 'text-violet-600 border-violet-100 bg-violet-50/40',
   'Himanshu HDR': 'text-violet-600 border-violet-100 bg-violet-50/40',
   Himanshu: 'text-violet-600 border-violet-100 bg-violet-50/40'
 };

@@ -39,34 +39,118 @@ export default function ChatRoom({ username, onLeave }) {
   const [lightboxImage, setLightboxImage] = useState(null);
   const [dbError, setDbError] = useState(null);
   const [replyingTo, setReplyingTo] = useState(null);
+  
+  // Pagination & Lazy loading state
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+  const chatContainerRef = useRef(null);
+  const lastMessageIdRef = useRef(null);
 
-  // Auto-scroll to bottom of chat
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // Load older messages as you scroll up
+  const loadOlderMessages = async () => {
+    if (!supabase || loadingMore || !hasMore || messages.length === 0) return;
+
+    setLoadingMore(true);
+    const container = chatContainerRef.current;
+    const scrollHeightBefore = container ? container.scrollHeight : 0;
+    const scrollTopBefore = container ? container.scrollTop : 0;
+
+    const oldestTimestamp = messages[0]?.timestamp;
+    if (!oldestTimestamp) {
+      setLoadingMore(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .lt('timestamp', oldestTimestamp)
+        .order('timestamp', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const reversed = [...data].reverse();
+        setMessages((prev) => [...reversed, ...prev]);
+
+        if (data.length < 20) {
+          setHasMore(false);
+        }
+
+        // Adjust scroll position after prepending
+        setTimeout(() => {
+          if (container) {
+            const newScrollHeight = container.scrollHeight;
+            container.scrollTop = newScrollHeight - scrollHeightBefore + scrollTopBefore;
+          }
+        }, 50);
+      } else {
+        setHasMore(false);
+      }
+    } catch (err) {
+      console.error('Error loading older messages:', err);
+    } finally {
+      setLoadingMore(false);
+    }
   };
 
+  const handleScroll = () => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+
+    if (container.scrollTop === 0) {
+      loadOlderMessages();
+    }
+  };
+
+  // Smart scrolling synchronization manager
   useEffect(() => {
-    scrollToBottom();
+    if (messages.length > 0) {
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg.id !== lastMessageIdRef.current) {
+        const container = chatContainerRef.current;
+        const isNearBottom = container 
+          ? (container.scrollHeight - container.scrollTop - container.clientHeight < 300) 
+          : true;
+        const isInitial = !lastMessageIdRef.current;
+
+        lastMessageIdRef.current = lastMsg.id;
+
+        if (isNearBottom || isInitial) {
+          setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }
+      }
+    }
   }, [messages]);
 
   // Load chat history & subscribe to Realtime listeners
   useEffect(() => {
     if (!supabase) return;
 
-    // 1. Fetch historical messages
+    // 1. Fetch latest 20 messages for initial load
     const fetchHistory = async () => {
       try {
         const { data, error } = await supabase
           .from('messages')
           .select('*')
-          .order('timestamp', { ascending: true })
-          .limit(100);
+          .order('timestamp', { ascending: false })
+          .limit(20);
 
         if (error) throw error;
-        setMessages(data || []);
+
+        const chronologicalData = data ? [...data].reverse() : [];
+        setMessages(chronologicalData);
+        
+        if (chronologicalData.length < 20) {
+          setHasMore(false);
+        }
       } catch (err) {
         console.error('Error fetching chat history:', err);
         setDbError('Failed to fetch message history. Please check if the SQL script has been run in your Supabase dashboard.');
@@ -416,7 +500,20 @@ export default function ChatRoom({ username, onLeave }) {
         )}
 
         {/* 💬 Scrollable Messages Stream */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hidden">
+        <div 
+          ref={chatContainerRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hidden"
+        >
+          {loadingMore && (
+            <div className="flex items-center justify-center py-2 animate-pulse">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent mr-2" />
+              <span className="text-3xs font-extrabold uppercase text-indigo-600 tracking-wider">
+                Retrieving message history...
+              </span>
+            </div>
+          )}
+
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center p-8 animate-fade-in">
               <span className="text-5xl animate-bounce mb-4">🔗</span>

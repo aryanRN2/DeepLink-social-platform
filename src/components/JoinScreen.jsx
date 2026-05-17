@@ -198,6 +198,26 @@ export default function JoinScreen({ onJoin }) {
             <span>DeepLink Portal v2.0</span>
           </div>
         </div>
+
+        {/* Creator's Message Card */}
+        <div className="mt-6 glass-panel-glow rounded-3xl p-5 sm:p-6 text-slate-700 space-y-3">
+          <h3 className="font-extrabold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+            ✨ Message from the Creator
+          </h3>
+          <p className="text-xs sm:text-sm leading-relaxed text-slate-600">
+            Hello! I am <strong>Aryan</strong> and I created this website. <strong>DeepLink</strong> was built as a dedicated space to connect my friends instantly. In the future, I will be introducing exclusive new features, including an unlimited AI image-generating chatbot and much more! For now, this is our secure platform to connect everyone—stay tuned for future updates!
+          </p>
+          <div className="pt-2 border-t border-slate-100/60">
+            <a 
+              href="https://placement-project-delta.vercel.app/source" 
+              target="_blank" 
+              rel="noreferrer" 
+              className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-extrabold transition-colors cursor-pointer"
+            >
+              👑 About Aryan &rarr;
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );

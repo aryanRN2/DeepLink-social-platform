@@ -22,6 +22,7 @@ export default function JoinScreen({ onJoin }) {
   const [error, setError] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState('granted');
+  const [activeStep, setActiveStep] = useState(1);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
@@ -58,33 +59,81 @@ export default function JoinScreen({ onJoin }) {
           </div>
 
           {notificationPermission === 'denied' ? (
-            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/60 text-slate-700 text-xs text-left space-y-3">
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/60 text-slate-700 text-xs text-left space-y-4">
               <div>
                 <p className="font-extrabold text-amber-800 flex items-center gap-1.5 text-xs sm:text-sm">
                   ⚠️ Notifications are Blocked
                 </p>
                 <p className="leading-relaxed text-slate-600 mt-1">
-                  You have blocked notification permissions for this website in your browser settings.
+                  You blocked notification permissions for this website. Modern browsers strictly block us from requesting it again automatically. You must allow it manually to enter.
                 </p>
               </div>
 
-              <div className="p-2.5 rounded-xl bg-amber-100/50 border border-amber-200/40 text-amber-900 leading-relaxed text-3xs">
-                <span className="font-extrabold">💡 Why doesn't the popup appear?</span>
-                <p className="mt-0.5 opacity-90">
-                  Modern browsers protect your privacy by <strong>strictly blocking</strong> websites from showing the prompt again once you select 'Block'. You must enable it manually using the lock icon to proceed.
-                </p>
-              </div>
+              {/* 📱 Mobile Android Chrome Tutorial Slider */}
+              <div className="bg-white border border-slate-150 p-4 rounded-2xl space-y-3 shadow-inner">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <span className="font-extrabold text-slate-800 uppercase tracking-wider text-3xs flex items-center gap-1">
+                    📱 Android Chrome Guide
+                  </span>
+                  <span className="text-indigo-650 font-extrabold text-3xs text-indigo-600">
+                    Step {activeStep} of 4
+                  </span>
+                </div>
 
-              <div className="space-y-1">
-                <p className="font-extrabold text-slate-700">
-                  How to manually allow & enter:
-                </p>
-                <ol className="list-decimal pl-4 space-y-1.5 text-slate-500 font-medium leading-relaxed">
-                  <li>Look at the very top of your browser window (the address bar with the site URL).</li>
-                  <li>Click the **Lock icon 🔒** or **Settings icon 🎛️** immediately to the left of the URL.</li>
-                  <li>Toggle Notifications to **"Allow"**.</li>
-                  <li>Click the orange **Check Permission Status** button below!</li>
-                </ol>
+                {/* Step Image Box */}
+                <div className="relative w-full aspect-[4/3] max-h-56 bg-slate-950/5 rounded-xl overflow-hidden flex items-center justify-center border border-slate-100">
+                  <img 
+                    src={`/tutorial/${activeStep}.png`} 
+                    alt={`Android Chrome guide Step ${activeStep}`} 
+                    className="w-full h-full object-contain max-h-full transition-all duration-300 select-none"
+                  />
+                </div>
+
+                {/* Step Instructions Text */}
+                <div className="space-y-1 py-1">
+                  <p className="font-extrabold text-slate-800 text-xs">
+                    {activeStep === 1 && "1. Tap the Settings / Lock Icon"}
+                    {activeStep === 2 && "2. Click Permissions / Site Settings"}
+                    {activeStep === 3 && "3. Tap Notifications Section"}
+                    {activeStep === 4 && "4. Switch Permission to Allow"}
+                  </p>
+                  <p className="text-slate-500 text-3xs leading-relaxed font-semibold">
+                    {activeStep === 1 && "Look at your mobile browser's URL address bar. Tap the settings lock controller button immediately to the left of the URL text."}
+                    {activeStep === 2 && "In the popup overlay card, tap on the 'Permissions' option or open your browser's 'Site Settings' panel."}
+                    {activeStep === 3 && "Locate the 'Notifications' or 'Permissions' row inside the browser's settings page."}
+                    {activeStep === 4 && "Toggle the switch or tap to set the Notifications permission state from 'Blocked' to 'Allow'. Then click the Check Status button below!"}
+                  </p>
+                </div>
+
+                {/* Slider Navigation Bar */}
+                <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                  <button
+                    type="button"
+                    disabled={activeStep === 1}
+                    onClick={() => setActiveStep(prev => prev - 1)}
+                    className="py-1 px-3 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-3xs font-extrabold transition-all cursor-pointer"
+                  >
+                    &larr; Prev
+                  </button>
+                  <div className="flex gap-1.5">
+                    {[1, 2, 3, 4].map((stepNum) => (
+                      <button
+                        key={stepNum}
+                        type="button"
+                        onClick={() => setActiveStep(stepNum)}
+                        className={`h-2 w-2 rounded-full transition-all cursor-pointer ${activeStep === stepNum ? 'bg-indigo-600 w-3.5' : 'bg-slate-200'}`}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    disabled={activeStep === 4}
+                    onClick={() => setActiveStep(prev => prev + 1)}
+                    className="py-1 px-3 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-650 hover:bg-indigo-100 disabled:opacity-40 disabled:hover:bg-indigo-50 text-3xs font-extrabold transition-all cursor-pointer"
+                  >
+                    Next &rarr;
+                  </button>
+                </div>
               </div>
 
               <button
@@ -95,7 +144,7 @@ export default function JoinScreen({ onJoin }) {
                     });
                   }
                 }}
-                className="w-full mt-2 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs transition-all cursor-pointer text-center shadow shadow-amber-500/10 active:scale-98"
+                className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs transition-all cursor-pointer text-center shadow shadow-amber-500/10 active:scale-98"
               >
                 🔄 Check Permission Status
               </button>

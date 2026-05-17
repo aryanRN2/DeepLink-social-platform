@@ -12,7 +12,8 @@ const DEEPLINK_MEMBERS = [
   { id: 'kartik', name: 'Kartik', avatar: '🦊', status: 'Shadow Hunter' },
   { id: 'anstik', name: 'Anstik', avatar: '👽', status: 'Void Walker' },
   { id: 'anshik', name: 'Anshik', avatar: '🚀', status: 'Rocket Engineer' },
-  { id: 'ayush', name: 'Ayush', avatar: '👑', status: 'The Spark' }
+  { id: 'ayush', name: 'Ayush', avatar: '👑', status: 'The Spark' },
+  { id: 'himanshu', name: 'Himanshu HDR', avatar: '🌟', status: 'Cosmic Star' }
 ];
 
 export default function JoinScreen({ onJoin }) {
@@ -206,8 +207,8 @@ export default function JoinScreen({ onJoin }) {
     setIsVerifying(true);
     setError('');
 
-    // Verification formula: name + "@321" (e.g. nitin@321 for Nitin)
-    const expectedPassword = `${selectedRole.id}@321`;
+    // Verification formula: name + "@321" (e.g. nitin@321 for Nitin), custom password for Himanshu
+    const expectedPassword = selectedRole.id === 'himanshu' ? 'hdr123' : `${selectedRole.id}@321`;
 
     setTimeout(() => {
       if (password === expectedPassword) {
@@ -325,14 +326,16 @@ export default function JoinScreen({ onJoin }) {
               <form onSubmit={handleVerifyAndJoin} className="space-y-4 mt-4">
                 <div className="space-y-2">
                   <label className="text-xs font-extrabold text-slate-600 uppercase tracking-wider block">
-                    2. Enter Personal Link Passcode (Formula: name@321)
+                    {selectedRole.id === 'himanshu'
+                      ? "2. Enter Personal Link Passcode"
+                      : "2. Enter Personal Link Passcode (Formula: name@321)"}
                   </label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="e.g. nitin@321"
+                      placeholder={selectedRole.id === 'himanshu' ? "Enter your passcode" : "e.g. nitin@321"}
                       required
                       autoFocus
                       className="w-full glass-input rounded-2xl py-3.5 px-4 pr-12 text-sm focus:ring-1 focus:ring-indigo-500"

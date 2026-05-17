@@ -15,7 +15,9 @@ const ROLE_AVATARS = {
   Kartik: '🦊',
   Anstik: '👽',
   Anshik: '🚀',
-  Ayush: '👑'
+  Ayush: '👑',
+  'Himanshu HDR': '🌟',
+  Himanshu: '🌟'
 };
 
 const ROLE_COLORS = {
@@ -26,8 +28,11 @@ const ROLE_COLORS = {
   Kartik: 'text-orange-600 border-orange-100 bg-orange-50/40',
   Anstik: 'text-teal-600 border-teal-100 bg-teal-50/40',
   Anshik: 'text-fuchsia-600 border-fuchsia-100 bg-fuchsia-50/40',
-  Ayush: 'text-emerald-600 border-emerald-100 bg-emerald-50/40'
+  Ayush: 'text-emerald-600 border-emerald-100 bg-emerald-50/40',
+  'Himanshu HDR': 'text-violet-600 border-violet-100 bg-violet-50/40',
+  Himanshu: 'text-violet-600 border-violet-100 bg-violet-50/40'
 };
+
 
 export default function ChatRoom({ username, onLeave }) {
   const [messages, setMessages] = useState([]);
@@ -48,6 +53,114 @@ export default function ChatRoom({ username, onLeave }) {
   const fileInputRef = useRef(null);
   const chatContainerRef = useRef(null);
   const lastMessageIdRef = useRef(null);
+
+  // Session/Device Identity synchronization setup
+  const [clientSessionId] = useState(() => {
+    if (typeof window !== 'undefined') {
+      let id = sessionStorage.getItem('deeplink_session_id');
+      if (!id) {
+        id = 'session-' + Math.random().toString(36).substring(2) + '-' + Date.now();
+        sessionStorage.setItem('deeplink_session_id', id);
+      }
+      return id;
+    }
+    return '';
+  });
+
+  const sentMessageIdsRef = useRef(new Set());
+  const isInitialPresenceSyncedRef = useRef(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      isInitialPresenceSyncedRef.current = true;
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const playMessageChime = () => {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5 note
+      oscillator.frequency.exponentialRampToValueAtTime(880.00, audioCtx.currentTime + 0.15); // A5 note
+      
+      gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.45);
+      
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.5);
+    } catch (err) {
+      console.error('Audio synthesizer not allowed by browser autoplay rules:', err);
+    }
+  };
+
+  const playJoinChime = () => {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const now = audioCtx.currentTime;
+      
+      const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+      notes.forEach((freq, index) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + index * 0.08);
+        
+        gain.gain.setValueAtTime(0.06, now + index * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.08 + 0.3);
+        
+        osc.start(now + index * 0.08);
+        osc.stop(now + index * 0.08 + 0.35);
+      });
+    } catch (err) {
+      console.error('Audio synthesizer failed:', err);
+    }
+  };
+
+  const playLeaveChime = () => {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const now = audioCtx.currentTime;
+      
+      const notes = [783.99, 659.25, 523.25]; // G5, E5, C5
+      notes.forEach((freq, index) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + index * 0.08);
+        
+        gain.gain.setValueAtTime(0.05, now + index * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.08 + 0.3);
+        
+        osc.start(now + index * 0.08);
+        osc.stop(now + index * 0.08 + 0.35);
+      });
+    } catch (err) {
+      console.error('Audio synthesizer failed:', err);
+    }
+  };
+
+  const generateUUID = () => {
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+      return window.crypto.randomUUID();
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  };
 
   // Load older messages as you scroll up
   const loadOlderMessages = async () => {
@@ -177,28 +290,11 @@ export default function ChatRoom({ username, onLeave }) {
           const newMsg = payload.new;
           setMessages((prev) => [...prev, newMsg]);
 
-          // Play synth chime & push system notification if from a friend
-          if (newMsg.username !== username) {
-            // Play notification synth beep
-            try {
-              const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-              const oscillator = audioCtx.createOscillator();
-              const gainNode = audioCtx.createGain();
-              oscillator.connect(gainNode);
-              gainNode.connect(audioCtx.destination);
-              
-              oscillator.type = 'sine';
-              oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5 note
-              oscillator.frequency.exponentialRampToValueAtTime(880.00, audioCtx.currentTime + 0.15); // A5 note
-              
-              gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
-              gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.45);
-              
-              oscillator.start();
-              oscillator.stop(audioCtx.currentTime + 0.5);
-            } catch (err) {
-              console.error('Audio synthesizer not allowed by browser autoplay rules:', err);
-            }
+          // Play chime & push system notification if sent from another device/session
+          const isMyOwnSessionMsg = sentMessageIdsRef.current.has(newMsg.id);
+          
+          if (!isMyOwnSessionMsg) {
+            playMessageChime();
 
             // Trigger system push notification banner
             if ('Notification' in window && Notification.permission === 'granted') {
@@ -211,7 +307,7 @@ export default function ChatRoom({ username, onLeave }) {
                 new Notification(`DeepLink — ${newMsg.username}`, {
                   body: notificationBody,
                   icon: 'https://cdn-icons-png.flaticon.com/512/3602/3602145.png',
-                  tag: 'deeplink-message',
+                  tag: `deeplink-message-${newMsg.id}`,
                   renotify: true
                 });
               } catch (e) {
@@ -238,25 +334,72 @@ export default function ChatRoom({ username, onLeave }) {
         const usersList = [];
         
         Object.keys(state).forEach((key) => {
-          usersList.push({
-            username: key,
-            joinedAt: state[key][0]?.onlineAt || new Date().toISOString()
-          });
+          const sessions = state[key] || [];
+          if (sessions.length > 0) {
+            usersList.push({
+              username: key,
+              joinedAt: sessions[0]?.onlineAt || new Date().toISOString(),
+              devicesCount: sessions.length
+            });
+          }
         });
         
         setActiveUsers(usersList);
       })
-      .on('presence', { event: 'join' }, ({ key }) => {
-        console.log(`${key} joined the channel`);
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        console.log(`${key} joined the channel`, newPresences);
+        if (isInitialPresenceSyncedRef.current && newPresences) {
+          newPresences.forEach((pres) => {
+            if (pres.sessionId !== clientSessionId) {
+              playJoinChime();
+              
+              if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                  const avatar = ROLE_AVATARS[key] || '👤';
+                  new Notification(`DeepLink — Activity`, {
+                    body: `${avatar} ${key} joined the chatroom`,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/3602/3602145.png',
+                    tag: `deeplink-join-${key}-${pres.sessionId}`,
+                    renotify: true
+                  });
+                } catch (e) {
+                  console.error('Error triggering join notification:', e);
+                }
+              }
+            }
+          });
+        }
       })
-      .on('presence', { event: 'leave' }, ({ key }) => {
-        console.log(`${key} left the channel`);
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+        console.log(`${key} left the channel`, leftPresences);
+        if (isInitialPresenceSyncedRef.current && leftPresences) {
+          leftPresences.forEach((pres) => {
+            if (pres.sessionId !== clientSessionId) {
+              playLeaveChime();
+              
+              if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                  const avatar = ROLE_AVATARS[key] || '👤';
+                  new Notification(`DeepLink — Activity`, {
+                    body: `${avatar} ${key} left the chatroom`,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/3602/3602145.png',
+                    tag: `deeplink-leave-${key}-${pres.sessionId}`,
+                    renotify: true
+                  });
+                } catch (e) {
+                  console.error('Error triggering leave notification:', e);
+                }
+              }
+            }
+          });
+        }
       });
 
     presenceChannel.subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {
         await presenceChannel.track({
-          onlineAt: new Date().toISOString()
+          onlineAt: new Date().toISOString(),
+          sessionId: clientSessionId
         });
       }
     });
@@ -265,7 +408,7 @@ export default function ChatRoom({ username, onLeave }) {
       supabase.removeChannel(messageChannel);
       supabase.removeChannel(presenceChannel);
     };
-  }, [username]);
+  }, [username, clientSessionId]);
 
   // Send standard text message
   const handleSendMessage = async (e) => {
@@ -278,7 +421,11 @@ export default function ChatRoom({ username, onLeave }) {
     setReplyingTo(null);
 
     try {
+      const messageId = generateUUID();
+      sentMessageIdsRef.current.add(messageId);
+
       const payload = {
+        id: messageId,
         username,
         text: textToSend,
         type: 'user'
@@ -344,7 +491,11 @@ export default function ChatRoom({ username, onLeave }) {
         ? `Shared a document: ${file.name}`
         : `Shared a ${mediaType}`;
 
+      const messageId = generateUUID();
+      sentMessageIdsRef.current.add(messageId);
+
       const payload = {
+        id: messageId,
         username,
         text: sharedMessageText,
         type: 'user',
@@ -436,7 +587,14 @@ export default function ChatRoom({ username, onLeave }) {
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className="text-xl shrink-0">{avatar}</span>
-                    <span className="font-bold text-xs truncate">{user.username}</span>
+                    <div className="min-w-0">
+                      <span className="font-bold text-xs truncate block">{user.username}</span>
+                      {user.devicesCount > 1 && (
+                        <span className="text-4xs text-slate-400 font-semibold uppercase tracking-wider block">
+                          {user.devicesCount} devices active
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
                 </div>

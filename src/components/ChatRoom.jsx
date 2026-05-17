@@ -186,12 +186,24 @@ export default function ChatRoom({ username, onLeave }) {
       if (file.type.startsWith('image/')) mediaType = 'image';
       else if (file.type.startsWith('video/')) mediaType = 'video';
       else if (file.type.startsWith('audio/')) mediaType = 'audio';
+      else if (
+        file.type === 'application/pdf' ||
+        file.type.startsWith('application/vnd.') ||
+        file.type.startsWith('text/') ||
+        ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip', 'rar', 'csv'].includes(fileExt.toLowerCase())
+      ) {
+        mediaType = 'document';
+      }
+
+      const sharedMessageText = mediaType === 'document' || mediaType === 'other'
+        ? `Shared a document: ${file.name}`
+        : `Shared a ${mediaType}`;
 
       // 3. Insert message linking to uploaded media
       const { error: dbError } = await supabase.from('messages').insert([
         {
           username,
-          text: `Shared a ${mediaType}`,
+          text: sharedMessageText,
           type: 'user',
           media_url: publicUrl,
           media_type: mediaType
@@ -420,6 +432,33 @@ export default function ChatRoom({ username, onLeave }) {
                               <audio src={msg.media_url} controls className="w-48 h-8 max-w-full" />
                             </div>
                           )}
+
+                          {(msg.media_type === 'document' || msg.media_type === 'other') && (
+                            <div className="rounded-xl border border-slate-200 p-3 bg-slate-50 flex items-center justify-between gap-3 max-w-full sm:max-w-xs shadow-sm">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="h-9 w-9 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0">
+                                  <span className="text-lg">📄</span>
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-xs font-bold text-slate-800 truncate max-w-[120px]" title={msg.text}>
+                                    {msg.text ? msg.text.replace('Shared a document: ', '') : 'Document'}
+                                  </p>
+                                  <p className="text-3xs text-slate-400 font-semibold uppercase tracking-wider">
+                                    {msg.media_type} File
+                                  </p>
+                                </div>
+                              </div>
+                              <a 
+                                href={msg.media_url} 
+                                target="_blank" 
+                                rel="noreferrer" 
+                                download
+                                className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-3xs font-extrabold transition-all shrink-0 cursor-pointer shadow-sm shadow-indigo-100"
+                              >
+                                Open
+                              </a>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -450,7 +489,6 @@ export default function ChatRoom({ username, onLeave }) {
                 type="file" 
                 ref={fileInputRef}
                 onChange={handleMediaUpload}
-                accept="image/*,video/*,audio/*"
                 className="hidden" 
               />
               
@@ -460,7 +498,7 @@ export default function ChatRoom({ username, onLeave }) {
                 onClick={triggerAttachment}
                 disabled={uploading}
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-400 hover:text-slate-700 hover:border-indigo-300 active:scale-95 disabled:opacity-50 transition-all cursor-pointer shadow-sm"
-                title="Send Media (Image/Video/Audio)"
+                title="Send Media or Documents (PDF, ZIP, DOC...)"
               >
                 <Paperclip className="w-4.5 h-4.5" />
               </button>

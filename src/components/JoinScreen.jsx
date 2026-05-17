@@ -11,7 +11,8 @@ const DEEPLINK_MEMBERS = [
   { id: 'vivek', name: 'Vivek', avatar: '🎩', status: 'The Tactician' },
   { id: 'kartik', name: 'Kartik', avatar: '🦊', status: 'Shadow Hunter' },
   { id: 'anstik', name: 'Anstik', avatar: '👽', status: 'Void Walker' },
-  { id: 'anshik', name: 'Anshik', avatar: '🚀', status: 'Rocket Engineer' }
+  { id: 'anshik', name: 'Anshik', avatar: '🚀', status: 'Rocket Engineer' },
+  { id: 'ayush', name: 'Ayush', avatar: '👑', status: 'The Spark' }
 ];
 
 export default function JoinScreen({ onJoin }) {

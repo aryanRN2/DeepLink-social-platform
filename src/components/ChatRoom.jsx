@@ -14,7 +14,8 @@ const ROLE_AVATARS = {
   Vivek: '🎩',
   Kartik: '🦊',
   Anstik: '👽',
-  Anshik: '🚀'
+  Anshik: '🚀',
+  Ayush: '👑'
 };
 
 const ROLE_COLORS = {
@@ -24,7 +25,8 @@ const ROLE_COLORS = {
   Vivek: 'text-sky-600 border-sky-100 bg-sky-50/40',
   Kartik: 'text-orange-600 border-orange-100 bg-orange-50/40',
   Anstik: 'text-teal-600 border-teal-100 bg-teal-50/40',
-  Anshik: 'text-fuchsia-600 border-fuchsia-100 bg-fuchsia-50/40'
+  Anshik: 'text-fuchsia-600 border-fuchsia-100 bg-fuchsia-50/40',
+  Ayush: 'text-emerald-600 border-emerald-100 bg-emerald-50/40'
 };
 
 export default function ChatRoom({ username, onLeave }) {

@@ -606,23 +606,28 @@ export default function ChatRoom({ username, onLeave }) {
         </div>
 
         {/* Current logged user block & LogOut */}
-        <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-2xl">{ROLE_AVATARS[username] || '👾'}</span>
-            <div className="min-w-0">
-              <p className="text-xs font-extrabold text-slate-800 truncate">{username}</p>
-              <p className="text-3xs text-emerald-600 font-semibold flex items-center gap-0.5">
-                <CheckCircle2 className="w-2.5 h-2.5" /> Online
-              </p>
+        <div className="pt-4 border-t border-slate-100 flex flex-col gap-3.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-2xl">{ROLE_AVATARS[username] || '👾'}</span>
+              <div className="min-w-0">
+                <p className="text-xs font-extrabold text-slate-800 truncate">{username}</p>
+                <p className="text-3xs text-emerald-600 font-semibold flex items-center gap-0.5">
+                  <CheckCircle2 className="w-2.5 h-2.5" /> Online
+                </p>
+              </div>
             </div>
+            <button 
+              onClick={onLeave}
+              className="p-2 rounded-xl bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-100 hover:text-rose-600 active:scale-95 transition-all cursor-pointer shadow-sm"
+              title="Leave Chatroom"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
-          <button 
-            onClick={onLeave}
-            className="p-2 rounded-xl bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-100 hover:text-rose-600 active:scale-95 transition-all cursor-pointer shadow-sm"
-            title="Leave Chatroom"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
+          <div className="text-[10px] text-slate-400 font-extrabold tracking-wider text-center border-t border-slate-100/60 pt-2.5">
+            ⚡ Build by <span className="text-indigo-600">Aryan Maurya</span>
+          </div>
         </div>
       </aside>
 

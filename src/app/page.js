@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
-import JoinScreen from './components/JoinScreen';
-import ChatRoom from './components/ChatRoom';
-import SupabaseSetupWizard from './components/SupabaseSetupWizard';
-import { isSupabaseConfigured } from './supabaseClient';
+"use client";
 
-export default function App() {
+import React, { useState } from 'react';
+import JoinScreen from '../components/JoinScreen';
+import ChatRoom from '../components/ChatRoom';
+import SupabaseSetupWizard from '../components/SupabaseSetupWizard';
+import { isSupabaseConfigured } from '../supabaseClient';
+
+export default function Home() {
   const [username, setUsername] = useState('');
 
-  // If Supabase credentials are not found in your local environment,
-  // we gracefully guide you through the instant setup wizard!
+  // If Supabase environment variables are missing,
+  // display the beautiful visual onboarding setup guide.
   if (!isSupabaseConfigured) {
     return <SupabaseSetupWizard />;
   }
@@ -26,7 +28,7 @@ export default function App() {
       {!username ? (
         <JoinScreen onJoin={handleJoin} />
       ) : (
-        <div className="max-w-7xl mx-auto md:px-4">
+        <div className="max-w-7xl mx-auto md:px-4 animate-fade-in">
           <ChatRoom 
             username={username} 
             onLeave={handleLeave} 

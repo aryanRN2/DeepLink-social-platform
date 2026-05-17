@@ -1,195 +1,200 @@
+"use client";
+
 import React, { useState } from 'react';
 import { MessageSquare, ArrowRight, ShieldCheck, Eye, EyeOff, UserCheck } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-const SQUAD_ROLES = [
-  { id: 'aryan', name: 'Aryan', avatar: '👾' },
-  { id: 'nitin', name: 'Nitin', avatar: '⚡' },
-  { id: 'niraj', name: 'Niraj', avatar: '🔥' },
-  { id: 'vivek', name: 'Vivek', avatar: '🎩' },
-  { id: 'kartik', name: 'Kartik', avatar: '🦊' },
-  { id: 'anstik', name: 'Anstik', avatar: '👽' },
-  { id: 'anshik', name: 'Anshik', avatar: '🚀' }
+const HANGOUT_MEMBERS = [
+  { id: 'aryan', name: 'Aryan', avatar: '👾', status: 'Core Developer' },
+  { id: 'nitin', name: 'Nitin', avatar: '⚡', status: 'Speedster' },
+  { id: 'niraj', name: 'Niraj', avatar: '🔥', status: 'Firecracker' },
+  { id: 'vivek', name: 'Vivek', avatar: '🎩', status: 'The Tactician' },
+  { id: 'kartik', name: 'Kartik', avatar: '🦊', status: 'Shadow Hunter' },
+  { id: 'anstik', name: 'Anstik', avatar: '👽', status: 'Void Walker' },
+  { id: 'anshik', name: 'Anshik', avatar: '🚀', status: 'Rocket Engineer' }
 ];
 
 export default function JoinScreen({ onJoin }) {
-  const [selectedRole, setSelectedRole] = useState('');
+  const [selectedRole, setSelectedRole] = useState(null);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSelectRole = (member) => {
+    setSelectedRole(member);
+    setPassword('');
+    setError('');
+  };
+
+  const handleVerifyAndJoin = (e) => {
     e.preventDefault();
+    if (!selectedRole) return;
+
+    setIsVerifying(true);
     setError('');
 
-    if (!selectedRole) {
-      setError('Please select your role first.');
-      return;
-    }
+    // Verification formula: name + "@321" (e.g. nitin@321 for Nitin)
+    const expectedPassword = `${selectedRole.id}@321`;
 
-    const expectedPassword = `${selectedRole}@321`;
-    const enteredPassword = password.trim();
-
-    if (!enteredPassword) {
-      setError('Password is required.');
-      return;
-    }
-
-    // Password Validation check
-    if (enteredPassword.toLowerCase() !== expectedPassword.toLowerCase()) {
-      setError(`Incorrect password for ${selectedRole}. Remember: name@321`);
-      return;
-    }
-
-    setIsLoading(true);
-    
-    // Play celebratory animation on verified login!
     setTimeout(() => {
-      confetti({
-        particleCount: 120,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#a78bfa', '#c084fc', '#6366f1', '#f472b6', '#34d399']
-      });
+      if (password === expectedPassword) {
+        // Trigger celebratory confetti burst!
+        confetti({
+          particleCount: 150,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#a78bfa', '#f472b6', '#34d399', '#3b82f6']
+        });
 
-      const matchedRole = SQUAD_ROLES.find(r => r.id === selectedRole);
-      onJoin(matchedRole ? matchedRole.name : 'Guest');
+        setTimeout(() => {
+          onJoin(selectedRole.name);
+        }, 800);
+      } else {
+        setError(`Incorrect passcode for ${selectedRole.name}. Please try again!`);
+        setIsVerifying(false);
+        // Add a micro haptic-shake visual feedback
+        const card = document.getElementById('auth-card');
+        if (card) {
+          card.classList.add('animate-shake');
+          setTimeout(() => card.classList.remove('animate-shake'), 500);
+        }
+      }
     }, 600);
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12 relative overflow-hidden select-none">
-      {/* Decorative ambient glowing backdrops */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div className="flex min-h-screen items-center justify-center px-4 py-8 relative overflow-hidden font-sans">
+      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-64 md:w-96 h-64 md:h-96 bg-violet-600/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-64 md:w-96 h-64 md:h-96 bg-fuchsia-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div className="w-full max-w-xl z-10 animate-slide-up">
-        {/* Logo and Greeting Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 to-fuchsia-500 shadow-lg shadow-violet-500/25 mb-4 border border-violet-400/20">
-            <MessageSquare className="h-8 w-8 text-white animate-pulse-subtle" />
+      <div id="auth-card" className="w-full max-w-2xl z-10 animate-slide-up transition-transform duration-300">
+        {/* Logo Branding */}
+        <div className="text-center mb-6">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 to-fuchsia-500 shadow-lg shadow-violet-500/25 mb-3 border border-violet-400/20">
+            <MessageSquare className="h-6 w-6 text-white" />
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-            Hangout<span className="text-gradient">Den</span>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            Hangout<span className="text-gradient font-bold">Den</span>
           </h1>
-          <p className="mt-2 text-sm text-gray-400">
+          <p className="mt-2 text-xs sm:text-sm text-gray-400">
             Select your identity and authenticate to join the squad hangout.
           </p>
         </div>
 
-        {/* Auth Glass Card */}
-        <div className="glass-panel-glow rounded-3xl p-6 sm:p-10">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            
-            {/* Step 1: Select Role */}
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
+        {/* Auth Module Panel */}
+        <div className="glass-panel-glow rounded-3xl p-5 sm:p-8 space-y-6">
+          {!selectedRole ? (
+            <div className="space-y-4">
+              <h2 className="text-sm font-bold tracking-wider text-violet-400 uppercase">
                 1. Select Your Member Identity
-              </label>
-              
-              {/* Role Selection Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                {SQUAD_ROLES.map((role) => {
-                  const isSelected = selectedRole === role.id;
-                  return (
-                    <button
-                      key={role.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedRole(role.id);
-                        setError('');
-                        setPassword(''); // Clear password on role change
-                      }}
-                      className={`relative flex flex-col items-center justify-center p-3.5 rounded-2xl border transition-all duration-300 cursor-pointer ${
-                        isSelected
-                          ? 'bg-violet-600/25 border-violet-500 text-white shadow-lg shadow-violet-500/10 scale-105'
-                          : 'bg-slate-900/50 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-slate-900/80 hover:border-white/10'
-                      }`}
-                    >
-                      <span className="text-2xl mb-1.5">{role.avatar}</span>
-                      <span className="text-sm font-semibold tracking-wide">{role.name}</span>
-                      
-                      {isSelected && (
-                        <span className="absolute top-1.5 right-1.5 bg-violet-500 text-white rounded-full p-0.5 animate-fade-in">
-                          <UserCheck className="w-3.5 h-3.5" />
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {HANGOUT_MEMBERS.map((member) => (
+                  <button
+                    key={member.id}
+                    onClick={() => handleSelectRole(member)}
+                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-900/60 border border-white/5 hover:border-violet-500/30 hover:bg-violet-950/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-left group cursor-pointer"
+                  >
+                    <span className="text-2xl sm:text-3xl bg-slate-800 p-2 rounded-xl group-hover:scale-110 group-hover:bg-violet-950/40 transition-transform duration-300">
+                      {member.avatar}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-bold text-white text-sm sm:text-base group-hover:text-violet-300 transition-colors">
+                        {member.name}
+                      </p>
+                      <p className="text-2xs sm:text-xs text-gray-400 truncate">
+                        {member.status}
+                      </p>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Back Button and Selected Role Banner */}
+              <div className="flex items-center justify-between pb-3 border-b border-white/5">
+                <button
+                  onClick={() => setSelectedRole(null)}
+                  className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  ← Back to Members
+                </button>
+                <span className="text-2xs text-gray-500">Identity Gate</span>
+              </div>
 
-            {/* Step 2: Password Input */}
-            {selectedRole && (
-              <div className="animate-slide-up space-y-4">
+              {/* Selected Member Detail */}
+              <div className="flex items-center gap-4 p-4 rounded-2xl bg-violet-950/10 border border-violet-500/10">
+                <span className="text-4xl bg-violet-950/30 p-3 rounded-2xl">
+                  {selectedRole.avatar}
+                </span>
                 <div>
-                  <label htmlFor="password" className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                    2. Enter Credentials for {SQUAD_ROLES.find(r => r.id === selectedRole)?.name}
+                  <h3 className="text-lg font-bold text-white">
+                    {selectedRole.name}
+                  </h3>
+                  <p className="text-xs text-violet-400">{selectedRole.status}</p>
+                </div>
+              </div>
+
+              {/* Password submission form */}
+              <form onSubmit={handleVerifyAndJoin} className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-300 uppercase tracking-wider block">
+                    2. Enter Passcode (Formula: name@321)
                   </label>
                   <div className="relative">
                     <input
-                      id="password"
                       type={showPassword ? 'text' : 'password'}
-                      required
                       value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (error) setError('');
-                      }}
-                      placeholder="Hint: name@321"
-                      disabled={isLoading}
-                      className="block w-full rounded-2xl border-0 bg-slate-900/60 pl-5 pr-12 py-4 text-white placeholder-gray-500 ring-1 ring-inset ring-gray-800 focus:ring-2 focus:ring-inset focus:ring-violet-500 focus:bg-slate-950 transition-all duration-300 outline-none text-base font-medium font-sans"
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="e.g. nitin@321"
+                      required
+                      autoFocus
+                      className="w-full glass-input rounded-2xl py-3.5 px-4 pr-12 text-sm focus:ring-1 focus:ring-violet-500"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 cursor-pointer p-1"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-white transition-colors cursor-pointer"
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-
-                  <p className="text-[10px] text-gray-500 mt-2 font-medium">
-                    Protected hangout channel. Credentials match <code className="bg-slate-950 px-1 rounded text-violet-400 font-mono">nickname@321</code>.
-                  </p>
                 </div>
-              </div>
-            )}
 
-            {/* Error notifications */}
-            {error && (
-              <div className="text-sm text-rose-400 flex items-center gap-1.5 justify-center py-1.5 px-3 rounded-xl bg-rose-500/5 border border-rose-500/10 animate-fade-in">
-                <span className="h-1.5 w-1.5 rounded-full bg-rose-500 inline-block animate-ping shrink-0"></span>
-                {error}
-              </div>
-            )}
-
-            {/* Action Trigger */}
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading || !selectedRole || !password}
-                className="group relative flex w-full justify-center items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-4 text-base font-bold text-white hover:from-violet-500 hover:to-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 shadow-lg shadow-violet-600/35 hover:shadow-violet-600/50 transition-all duration-300 disabled:opacity-35 disabled:shadow-none"
-              >
-                {isLoading ? (
-                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                ) : (
-                  <>
-                    <ShieldCheck className="w-5 h-5 text-violet-200" />
-                    Verify and Join Hangout
-                    <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                  </>
+                {error && (
+                  <p className="text-xs text-rose-400 font-semibold bg-rose-950/20 border border-rose-500/15 p-3 rounded-xl animate-fade-in">
+                    ⚠️ {error}
+                  </p>
                 )}
-              </button>
-            </div>
-          </form>
-        </div>
 
-        {/* Footer Ambient */}
-        <div className="mt-8 text-center text-xs text-gray-500">
-          Hangout Den Verification Portal • Cloud Synced
+                <button
+                  type="submit"
+                  disabled={isVerifying || !password}
+                  className="w-full relative overflow-hidden group py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-bold text-sm shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {isVerifying ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      Authenticating Secure Channel...
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck className="w-4 h-4" /> Verify and Join Hangout <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+          )}
+
+          <div className="border-t border-white/5 pt-4 flex items-center justify-between text-2xs text-gray-500">
+            <span className="flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> End-to-End Synced
+            </span>
+            <span>Hangout Den Verification Portal</span>
+          </div>
         </div>
       </div>
     </div>

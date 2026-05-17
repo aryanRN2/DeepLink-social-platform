@@ -71,8 +71,21 @@ export default function JoinScreen({ onJoin }) {
               <ol className="list-decimal pl-4 space-y-1 text-slate-500">
                 <li>Click the <strong>Lock / Settings icon</strong> in your browser's address bar.</li>
                 <li>Toggle Notifications to <strong>"Allow"</strong>.</li>
-                <li>Refresh the page to access the portal!</li>
+                <li>Click the **Check Status** button below to enter!</li>
               </ol>
+
+              <button
+                onClick={() => {
+                  if (typeof window !== 'undefined' && 'Notification' in window) {
+                    Notification.requestPermission().then(perm => {
+                      setNotificationPermission(perm);
+                    });
+                  }
+                }}
+                className="w-full mt-3 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs transition-all cursor-pointer text-center shadow shadow-amber-500/10"
+              >
+                🔄 Check Permission Status
+              </button>
             </div>
           ) : (
             <button

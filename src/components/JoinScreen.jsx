@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageSquare, ArrowRight, ShieldCheck, Eye, EyeOff, UserCheck, Share2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -23,6 +23,33 @@ export default function JoinScreen({ onJoin }) {
   const [isVerifying, setIsVerifying] = useState(false);
 
   const handleSelectRole = (member) => {
+    try {
+      const saved = localStorage.getItem('deeplink_credentials');
+      if (saved) {
+        const creds = JSON.parse(saved);
+        if (creds && creds.memberId === member.id && creds.passcode) {
+          // Saved credentials match! Instantly log in with celebration
+          setIsVerifying(true);
+          setSelectedRole(member);
+          
+          confetti({
+            particleCount: 150,
+            spread: 80,
+            origin: { y: 0.6 },
+            colors: ['#4f46e5', '#06b6d4', '#d946ef', '#10b981']
+          });
+
+          setTimeout(() => {
+            onJoin(member.name);
+          }, 800);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('Error reading saved credentials on role select:', err);
+    }
+
+    // Default: Ask for passcode
     setSelectedRole(member);
     setPassword('');
     setError('');
@@ -40,6 +67,17 @@ export default function JoinScreen({ onJoin }) {
 
     setTimeout(() => {
       if (password === expectedPassword) {
+        // Save credentials for "Remember Me" session persistence
+        try {
+          localStorage.setItem('deeplink_credentials', JSON.stringify({
+            username: selectedRole.name,
+            memberId: selectedRole.id,
+            passcode: password
+          }));
+        } catch (err) {
+          console.error('Error saving credentials to local storage:', err);
+        }
+
         // Trigger celebratory confetti burst!
         confetti({
           particleCount: 150,

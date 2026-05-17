@@ -82,7 +82,51 @@ export default function ChatRoom({ username, onLeave }) {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },
         (payload) => {
-          setMessages((prev) => [...prev, payload.new]);
+          const newMsg = payload.new;
+          setMessages((prev) => [...prev, newMsg]);
+
+          // Play synth chime & push system notification if from a friend
+          if (newMsg.username !== username) {
+            // Play notification synth beep
+            try {
+              const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+              const oscillator = audioCtx.createOscillator();
+              const gainNode = audioCtx.createGain();
+              oscillator.connect(gainNode);
+              gainNode.connect(audioCtx.destination);
+              
+              oscillator.type = 'sine';
+              oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5 note
+              oscillator.frequency.exponentialRampToValueAtTime(880.00, audioCtx.currentTime + 0.15); // A5 note
+              
+              gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
+              gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.45);
+              
+              oscillator.start();
+              oscillator.stop(audioCtx.currentTime + 0.5);
+            } catch (err) {
+              console.error('Audio synthesizer not allowed by browser autoplay rules:', err);
+            }
+
+            // Trigger system push notification banner
+            if ('Notification' in window && Notification.permission === 'granted') {
+              try {
+                let notificationBody = newMsg.text || 'Shared an attachment';
+                if (newMsg.text && newMsg.text.startsWith('Shared a document: ')) {
+                  notificationBody = newMsg.text.replace('Shared a document: ', '📄 ');
+                }
+
+                new Notification(`DeepLink — ${newMsg.username}`, {
+                  body: notificationBody,
+                  icon: 'https://cdn-icons-png.flaticon.com/512/3602/3602145.png',
+                  tag: 'deeplink-message',
+                  renotify: true
+                });
+              } catch (e) {
+                console.error('Error triggering notification:', e);
+              }
+            }
+          }
         }
       )
       .subscribe((status) => {

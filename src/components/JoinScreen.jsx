@@ -21,6 +21,75 @@ export default function JoinScreen({ onJoin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState('granted');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      setNotificationPermission(Notification.permission);
+      
+      // Auto-trigger browser permission prompt if still default
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().then(perm => {
+          setNotificationPermission(perm);
+        });
+      }
+    }
+  }, []);
+
+  if (typeof window !== 'undefined' && 'Notification' in window && notificationPermission !== 'granted') {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/65 backdrop-blur-xl p-4 font-sans select-none animate-fade-in">
+        <div className="glass-panel-glow max-w-md w-full p-6 sm:p-8 text-center rounded-3xl space-y-6 shadow-2xl border border-white/50 bg-white/95">
+          <div className="relative inline-flex items-center justify-center h-20 w-20 rounded-full bg-indigo-50 border border-indigo-100 shadow-md">
+            <span className="text-4xl animate-bounce">🔔</span>
+            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-indigo-500"></span>
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-2xl font-black tracking-tight text-slate-800">
+              Notification Permissions Required
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              <strong>DeepLink</strong> connects you and your friends instantly. To make sure you never miss a new chat message or reply on your device, notification access is strictly required to enter.
+            </p>
+          </div>
+
+          {notificationPermission === 'denied' ? (
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/60 text-slate-700 text-xs text-left space-y-2">
+              <p className="font-extrabold text-amber-800 flex items-center gap-1.5">
+                ⚠️ Notifications are Blocked
+              </p>
+              <p className="leading-relaxed">
+                You have blocked notification permissions for this website in your browser settings.
+              </p>
+              <p className="font-bold text-slate-600">
+                To fix this and enter:
+              </p>
+              <ol className="list-decimal pl-4 space-y-1 text-slate-500">
+                <li>Click the <strong>Lock / Settings icon</strong> in your browser's address bar.</li>
+                <li>Toggle Notifications to <strong>"Allow"</strong>.</li>
+                <li>Refresh the page to access the portal!</li>
+              </ol>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                Notification.requestPermission().then(perm => {
+                  setNotificationPermission(perm);
+                });
+              }}
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-cyan-500 text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-indigo-500/20 hover:scale-[1.01] active:scale-98 transition-all cursor-pointer"
+            >
+              Allow Notifications &rarr;
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const handleSelectRole = (member) => {
     try {

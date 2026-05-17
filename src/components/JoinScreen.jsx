@@ -58,21 +58,34 @@ export default function JoinScreen({ onJoin }) {
           </div>
 
           {notificationPermission === 'denied' ? (
-            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/60 text-slate-700 text-xs text-left space-y-2">
-              <p className="font-extrabold text-amber-800 flex items-center gap-1.5">
-                ⚠️ Notifications are Blocked
-              </p>
-              <p className="leading-relaxed">
-                You have blocked notification permissions for this website in your browser settings.
-              </p>
-              <p className="font-bold text-slate-600">
-                To fix this and enter:
-              </p>
-              <ol className="list-decimal pl-4 space-y-1 text-slate-500">
-                <li>Click the <strong>Lock / Settings icon</strong> in your browser's address bar.</li>
-                <li>Toggle Notifications to <strong>"Allow"</strong>.</li>
-                <li>Click the **Check Status** button below to enter!</li>
-              </ol>
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/60 text-slate-700 text-xs text-left space-y-3">
+              <div>
+                <p className="font-extrabold text-amber-800 flex items-center gap-1.5 text-xs sm:text-sm">
+                  ⚠️ Notifications are Blocked
+                </p>
+                <p className="leading-relaxed text-slate-600 mt-1">
+                  You have blocked notification permissions for this website in your browser settings.
+                </p>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-amber-100/50 border border-amber-200/40 text-amber-900 leading-relaxed text-3xs">
+                <span className="font-extrabold">💡 Why doesn't the popup appear?</span>
+                <p className="mt-0.5 opacity-90">
+                  Modern browsers protect your privacy by <strong>strictly blocking</strong> websites from showing the prompt again once you select 'Block'. You must enable it manually using the lock icon to proceed.
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="font-extrabold text-slate-700">
+                  How to manually allow & enter:
+                </p>
+                <ol className="list-decimal pl-4 space-y-1.5 text-slate-500 font-medium leading-relaxed">
+                  <li>Look at the very top of your browser window (the address bar with the site URL).</li>
+                  <li>Click the **Lock icon 🔒** or **Settings icon 🎛️** immediately to the left of the URL.</li>
+                  <li>Toggle Notifications to **"Allow"**.</li>
+                  <li>Click the orange **Check Permission Status** button below!</li>
+                </ol>
+              </div>
 
               <button
                 onClick={() => {
@@ -82,7 +95,7 @@ export default function JoinScreen({ onJoin }) {
                     });
                   }
                 }}
-                className="w-full mt-3 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs transition-all cursor-pointer text-center shadow shadow-amber-500/10"
+                className="w-full mt-2 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs transition-all cursor-pointer text-center shadow shadow-amber-500/10 active:scale-98"
               >
                 🔄 Check Permission Status
               </button>

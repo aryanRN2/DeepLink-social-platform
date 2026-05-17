@@ -38,6 +38,7 @@ export default function ChatRoom({ username, onLeave }) {
   const [activeTab, setActiveTab] = useState('chat'); // 'chat' or 'members' for mobile toggle
   const [lightboxImage, setLightboxImage] = useState(null);
   const [dbError, setDbError] = useState(null);
+  const [replyingTo, setReplyingTo] = useState(null);
 
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -137,15 +138,23 @@ export default function ChatRoom({ username, onLeave }) {
 
     const textToSend = inputText;
     setInputText('');
+    const replyContext = replyingTo;
+    setReplyingTo(null);
 
     try {
-      const { error } = await supabase.from('messages').insert([
-        {
-          username,
-          text: textToSend,
-          type: 'user'
-        }
-      ]);
+      const payload = {
+        username,
+        text: textToSend,
+        type: 'user'
+      };
+
+      if (replyContext) {
+        payload.reply_to_id = replyContext.id;
+        payload.reply_to_text = replyContext.text;
+        payload.reply_to_username = replyContext.username;
+      }
+
+      const { error } = await supabase.from('messages').insert([payload]);
       if (error) throw error;
     } catch (err) {
       console.error('Error inserting message:', err);
@@ -199,16 +208,23 @@ export default function ChatRoom({ username, onLeave }) {
         ? `Shared a document: ${file.name}`
         : `Shared a ${mediaType}`;
 
+      const payload = {
+        username,
+        text: sharedMessageText,
+        type: 'user',
+        media_url: publicUrl,
+        media_type: mediaType
+      };
+
+      if (replyingTo) {
+        payload.reply_to_id = replyingTo.id;
+        payload.reply_to_text = replyingTo.text;
+        payload.reply_to_username = replyingTo.username;
+        setReplyingTo(null);
+      }
+
       // 3. Insert message linking to uploaded media
-      const { error: dbError } = await supabase.from('messages').insert([
-        {
-          username,
-          text: sharedMessageText,
-          type: 'user',
-          media_url: publicUrl,
-          media_type: mediaType
-        }
-      ]);
+      const { error: dbError } = await supabase.from('messages').insert([payload]);
 
       if (dbError) throw dbError;
     } catch (err) {
@@ -373,7 +389,8 @@ export default function ChatRoom({ username, onLeave }) {
               return (
                 <div 
                   key={msg.id || msg.timestamp}
-                  className={`flex gap-2.5 max-w-[85%] sm:max-w-[75%] ${isSelf ? 'ml-auto flex-row-reverse' : ''} animate-fade-in`}
+                  id={`msg-${msg.id}`}
+                  className={`flex gap-2.5 max-w-[85%] sm:max-w-[75%] ${isSelf ? 'ml-auto flex-row-reverse' : ''} transition-all duration-300 rounded-2xl animate-fade-in`}
                 >
                   {/* Sender Avatar */}
                   <span className="text-2xl shrink-0 self-end mb-1">{avatar}</span>
@@ -383,6 +400,16 @@ export default function ChatRoom({ username, onLeave }) {
                     <div className={`flex items-center gap-1.5 text-3xs ${isSelf ? 'justify-end' : ''}`}>
                       <span className="font-extrabold text-slate-800 tracking-wider">{msg.username}</span>
                       <span className="text-slate-400">{formatTime(msg.timestamp)}</span>
+                      <button
+                        onClick={() => setReplyingTo({
+                          id: msg.id,
+                          username: msg.username,
+                          text: msg.text || `Shared a ${msg.media_type || 'file'}`
+                        })}
+                        className="text-indigo-600 hover:text-indigo-800 font-bold hover:underline cursor-pointer ml-1 transition-all"
+                      >
+                        Reply
+                      </button>
                     </div>
 
                     {/* Speech Bubble Card */}
@@ -392,6 +419,34 @@ export default function ChatRoom({ username, onLeave }) {
                         ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-br-none border-transparent shadow-indigo-100' 
                         : 'bg-white border-slate-200/60 text-slate-800 rounded-bl-none shadow-slate-100'}
                     `}>
+                      {/* Render Replied Message Header inside bubble */}
+                      {msg.reply_to_text && (
+                        <div 
+                          onClick={() => {
+                            const element = document.getElementById(`msg-${msg.reply_to_id}`);
+                            if (element) {
+                              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                              // Highlight effect
+                              element.classList.add('bg-indigo-50', 'ring-2', 'ring-indigo-500/20');
+                              setTimeout(() => {
+                                element.classList.remove('bg-indigo-50', 'ring-2', 'ring-indigo-500/20');
+                              }, 1500);
+                            }
+                          }}
+                          className={`
+                            p-2 rounded-lg text-3xs leading-tight mb-2 border-l-2 truncate max-w-full cursor-pointer hover:opacity-90 active:scale-99 transition-all
+                            ${isSelf 
+                              ? 'bg-white/10 border-white/50 text-indigo-100' 
+                              : 'bg-slate-50 border-indigo-500 text-slate-500'}
+                          `}
+                        >
+                          <p className="font-extrabold uppercase tracking-wider text-4xs opacity-85 mb-0.5">
+                            Replying to {msg.reply_to_username}
+                          </p>
+                          <p className="italic truncate">{msg.reply_to_text}</p>
+                        </div>
+                      )}
+
                       {/* Render text if present */}
                       {msg.text && <p className="whitespace-pre-wrap">{msg.text}</p>}
 
@@ -480,6 +535,30 @@ export default function ChatRoom({ username, onLeave }) {
                 <span className="text-3xs font-extrabold uppercase text-indigo-600 tracking-wider">
                   Syncing file payload to DeepLink storage...
                 </span>
+              </div>
+            )}
+
+            {/* Replying To Preview Panel */}
+            {replyingTo && (
+              <div className="px-3 py-2 flex items-center justify-between gap-3 border-b border-slate-100 mb-2 animate-fade-in bg-indigo-50/40 rounded-2xl">
+                <div className="min-w-0 flex items-center gap-2">
+                  <span className="text-xs">💬</span>
+                  <div className="min-w-0">
+                    <p className="text-3xs font-extrabold text-indigo-600 uppercase tracking-wider">
+                      Replying to {replyingTo.username}
+                    </p>
+                    <p className="text-xs text-slate-600 truncate max-w-[200px] sm:max-w-md font-medium">
+                      {replyingTo.text}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setReplyingTo(null)}
+                  className="p-1 rounded-lg hover:bg-indigo-100 text-indigo-600 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </div>
             )}
 

@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from 'react';
-import { MessageSquare, ArrowRight, ShieldCheck, Eye, EyeOff, UserCheck } from 'lucide-react';
+import { MessageSquare, ArrowRight, ShieldCheck, Eye, EyeOff, UserCheck, Share2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-const HANGOUT_MEMBERS = [
+const DEEPLINK_MEMBERS = [
   { id: 'aryan', name: 'Aryan', avatar: '👾', status: 'Core Developer' },
   { id: 'nitin', name: 'Nitin', avatar: '⚡', status: 'Speedster' },
   { id: 'niraj', name: 'Niraj', avatar: '🔥', status: 'Firecracker' },
@@ -44,7 +44,7 @@ export default function JoinScreen({ onJoin }) {
           particleCount: 150,
           spread: 80,
           origin: { y: 0.6 },
-          colors: ['#a78bfa', '#f472b6', '#34d399', '#3b82f6']
+          colors: ['#4f46e5', '#06b6d4', '#d946ef', '#10b981']
         });
 
         setTimeout(() => {
@@ -65,45 +65,46 @@ export default function JoinScreen({ onJoin }) {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-8 relative overflow-hidden font-sans">
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-64 md:w-96 h-64 md:h-96 bg-violet-600/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-64 md:w-96 h-64 md:h-96 bg-fuchsia-600/10 rounded-full blur-3xl pointer-events-none"></div>
+      {/* Soft color-ambient backdrop blobs */}
+      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-64 md:w-96 h-64 md:h-96 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-64 md:w-96 h-64 md:h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
       <div id="auth-card" className="w-full max-w-2xl z-10 animate-slide-up transition-transform duration-300">
-        {/* Logo Branding */}
-        <div className="text-center mb-6">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 to-fuchsia-500 shadow-lg shadow-violet-500/25 mb-3 border border-violet-400/20">
-            <MessageSquare className="h-6 w-6 text-white" />
+        {/* Rebranded Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 shadow-lg shadow-indigo-500/20 mb-4 border border-white/50">
+            <Share2 className="h-6 w-6 text-white" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            Hangout<span className="text-gradient font-bold">Den</span>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">
+            Deep<span className="text-gradient font-black">Link</span>
           </h1>
-          <p className="mt-2 text-xs sm:text-sm text-gray-400">
-            Select your identity and authenticate to join the squad hangout.
+          <p className="mt-2 text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
+            Connect deeply with friends instantly. Select your connection and verify your secure link.
           </p>
         </div>
 
-        {/* Auth Module Panel */}
+        {/* Rebranded Light-Glass Panel */}
         <div className="glass-panel-glow rounded-3xl p-5 sm:p-8 space-y-6">
           {!selectedRole ? (
             <div className="space-y-4">
-              <h2 className="text-sm font-bold tracking-wider text-violet-400 uppercase">
-                1. Select Your Member Identity
+              <h2 className="text-xs font-extrabold tracking-wider text-indigo-600 uppercase">
+                1. Select Your Friend Identity
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {HANGOUT_MEMBERS.map((member) => (
+                {DEEPLINK_MEMBERS.map((member) => (
                   <button
                     key={member.id}
                     onClick={() => handleSelectRole(member)}
-                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-900/60 border border-white/5 hover:border-violet-500/30 hover:bg-violet-950/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-left group cursor-pointer"
+                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-white/60 border border-slate-100 hover:border-indigo-400 hover:bg-indigo-50/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-left group cursor-pointer shadow-sm shadow-slate-100/50"
                   >
-                    <span className="text-2xl sm:text-3xl bg-slate-800 p-2 rounded-xl group-hover:scale-110 group-hover:bg-violet-950/40 transition-transform duration-300">
+                    <span className="text-2xl sm:text-3xl bg-slate-100/80 p-2 rounded-xl group-hover:scale-110 group-hover:bg-indigo-100/40 transition-transform duration-300">
                       {member.avatar}
                     </span>
                     <div className="min-w-0">
-                      <p className="font-bold text-white text-sm sm:text-base group-hover:text-violet-300 transition-colors">
+                      <p className="font-bold text-slate-800 text-sm sm:text-base group-hover:text-indigo-600 transition-colors">
                         {member.name}
                       </p>
-                      <p className="text-2xs sm:text-xs text-gray-400 truncate">
+                      <p className="text-2xs sm:text-xs text-slate-400 truncate">
                         {member.status}
                       </p>
                     </div>
@@ -113,35 +114,35 @@ export default function JoinScreen({ onJoin }) {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Back Button and Selected Role Banner */}
-              <div className="flex items-center justify-between pb-3 border-b border-white/5">
+              {/* Back Button */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <button
                   onClick={() => setSelectedRole(null)}
-                  className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1 transition-colors cursor-pointer"
+                  className="text-xs text-indigo-600 hover:text-indigo-700 font-bold flex items-center gap-1 transition-colors cursor-pointer"
                 >
-                  ← Back to Members
+                  ← Back to Friends list
                 </button>
-                <span className="text-2xs text-gray-500">Identity Gate</span>
+                <span className="text-2xs text-slate-400 font-semibold uppercase tracking-wider">Identity Gate</span>
               </div>
 
-              {/* Selected Member Detail */}
-              <div className="flex items-center gap-4 p-4 rounded-2xl bg-violet-950/10 border border-violet-500/10">
-                <span className="text-4xl bg-violet-950/30 p-3 rounded-2xl">
+              {/* Selected Profile Detail */}
+              <div className="flex items-center gap-4 p-4 rounded-2xl bg-indigo-50/30 border border-indigo-100/50">
+                <span className="text-4xl bg-indigo-100/50 p-3 rounded-2xl shadow-sm">
                   {selectedRole.avatar}
                 </span>
                 <div>
-                  <h3 className="text-lg font-bold text-white">
+                  <h3 className="text-lg font-bold text-slate-800">
                     {selectedRole.name}
                   </h3>
-                  <p className="text-xs text-violet-400">{selectedRole.status}</p>
+                  <p className="text-xs text-indigo-600 font-semibold">{selectedRole.status}</p>
                 </div>
               </div>
 
-              {/* Password submission form */}
+              {/* Password entry form */}
               <form onSubmit={handleVerifyAndJoin} className="space-y-4 mt-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-300 uppercase tracking-wider block">
-                    2. Enter Passcode (Formula: name@321)
+                  <label className="text-xs font-extrabold text-slate-600 uppercase tracking-wider block">
+                    2. Enter Personal Link Passcode (Formula: name@321)
                   </label>
                   <div className="relative">
                     <input
@@ -151,12 +152,12 @@ export default function JoinScreen({ onJoin }) {
                       placeholder="e.g. nitin@321"
                       required
                       autoFocus
-                      className="w-full glass-input rounded-2xl py-3.5 px-4 pr-12 text-sm focus:ring-1 focus:ring-violet-500"
+                      className="w-full glass-input rounded-2xl py-3.5 px-4 pr-12 text-sm focus:ring-1 focus:ring-indigo-500"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -164,7 +165,7 @@ export default function JoinScreen({ onJoin }) {
                 </div>
 
                 {error && (
-                  <p className="text-xs text-rose-400 font-semibold bg-rose-950/20 border border-rose-500/15 p-3 rounded-xl animate-fade-in">
+                  <p className="text-xs text-rose-600 font-semibold bg-rose-50 border border-rose-100 p-3 rounded-xl animate-fade-in">
                     ⚠️ {error}
                   </p>
                 )}
@@ -172,16 +173,16 @@ export default function JoinScreen({ onJoin }) {
                 <button
                   type="submit"
                   disabled={isVerifying || !password}
-                  className="w-full relative overflow-hidden group py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-bold text-sm shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full relative overflow-hidden group py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-cyan-600 text-white font-bold text-sm shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/25 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isVerifying ? (
                     <>
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      Authenticating Secure Channel...
+                      Establishing Secure Link...
                     </>
                   ) : (
                     <>
-                      <UserCheck className="w-4 h-4" /> Verify and Join Hangout <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      <UserCheck className="w-4 h-4" /> Verify & Open DeepLink <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </>
                   )}
                 </button>
@@ -189,11 +190,11 @@ export default function JoinScreen({ onJoin }) {
             </div>
           )}
 
-          <div className="border-t border-white/5 pt-4 flex items-center justify-between text-2xs text-gray-500">
+          <div className="border-t border-slate-100 pt-4 flex items-center justify-between text-2xs text-slate-400 font-medium">
             <span className="flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> End-to-End Synced
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Secure Verification Synced
             </span>
-            <span>Hangout Den Verification Portal</span>
+            <span>DeepLink Portal v2.0</span>
           </div>
         </div>
       </div>

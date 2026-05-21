@@ -6,6 +6,8 @@ import {
   Play, Volume2, X, ShieldAlert, CheckCircle2, Share2
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
+import VehicleGame from './VehicleGame';
+import FightingRoom from './FightingRoom';
 
 const ROLE_AVATARS = {
   Aryan: '👾',
@@ -46,6 +48,8 @@ export default function ChatRoom({ username, onLeave }) {
   const [lightboxImage, setLightboxImage] = useState(null);
   const [dbError, setDbError] = useState(null);
   const [replyingTo, setReplyingTo] = useState(null);
+  const [showGame, setShowGame] = useState(false);
+  const [showFightingRoom, setShowFightingRoom] = useState(false);
   
   // Pagination & Lazy loading state
   const [hasMore, setHasMore] = useState(true);
@@ -656,12 +660,26 @@ export default function ChatRoom({ username, onLeave }) {
               </div>
             </div>
           </div>
-          <button 
-            onClick={onLeave}
-            className="text-xs text-rose-500 border border-rose-100 bg-rose-50/50 hover:bg-rose-100/50 py-1.5 px-3 rounded-xl transition-all cursor-pointer flex items-center gap-1 font-bold shadow-sm"
-          >
-            Disconnect <LogOut className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setShowFightingRoom(true)}
+              className="text-xs text-violet-650 border border-violet-150 bg-violet-50/70 hover:bg-violet-100/70 py-1.5 px-3.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 font-extrabold shadow-sm hover:scale-[1.01] hover:shadow-violet-200"
+            >
+              ⚔️ Fighting Room
+            </button>
+            <button 
+              onClick={() => setShowGame(true)}
+              className="text-xs text-indigo-650 border border-indigo-150 bg-indigo-50/70 hover:bg-indigo-100/70 py-1.5 px-3.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 font-extrabold shadow-sm hover:scale-[1.01]"
+            >
+              🎮 Play Game
+            </button>
+            <button 
+              onClick={onLeave}
+              className="text-xs text-rose-500 border border-rose-100 bg-rose-50/50 hover:bg-rose-100/50 py-1.5 px-3 rounded-xl transition-all cursor-pointer flex items-center gap-1 font-bold shadow-sm"
+            >
+              Disconnect <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </header>
 
         {/* Backdrop overlay for mobile drawer */}
@@ -918,6 +936,9 @@ export default function ChatRoom({ username, onLeave }) {
           </div>
         </footer>
       </main>
+
+      {showGame && <VehicleGame onClose={() => setShowGame(false)} />}
+      {showFightingRoom && <FightingRoom onClose={() => setShowFightingRoom(false)} username={username} />}
 
       {/* 🖼️ Fullscreen Image Lightbox Overlay */}
       {lightboxImage && (

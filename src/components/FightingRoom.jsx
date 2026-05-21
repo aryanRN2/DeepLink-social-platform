@@ -289,10 +289,14 @@ export default function FightingRoom({ onClose, username }) {
   const channelRef = useRef(null);
 
   // Input states stored in refs for direct frame accessibility
+  const desktopSensitivity = 0.0022; // Configurable desktop sensitivity multiplier
   const keysRef = useRef({ w: false, a: false, s: false, d: false, Space: false });
   const mouseLookRef = useRef({ deltaX: 0, deltaY: 0 });
   const touchJoystickRef = useRef({ startX: 0, startY: 0, currentX: 0, currentY: 0, active: false });
+  const touchJoystickIdRef = useRef(null);
   const touchLookRef = useRef({ lastX: 0, lastY: 0, active: false });
+  const touchLookIdRef = useRef(null);
+  const touchLookVelocityRef = useRef({ x: 0, y: 0 });
 
   // Player position & physics state in refs (60fps reactive loop)
   const playerRef = useRef({
@@ -421,7 +425,8 @@ export default function FightingRoom({ onClose, username }) {
       const dpitch = -deltaGamma * sensitivity * orientationSign;
 
       playerRef.current.yaw += dyaw;
-      playerRef.current.pitch = Math.max(-Math.PI / 2 + 0.02, Math.min(Math.PI / 2 - 0.02, playerRef.current.pitch + dpitch));
+      const clampAngle = Math.PI / 2;
+      playerRef.current.pitch = Math.max(-clampAngle, Math.min(clampAngle, playerRef.current.pitch + dpitch));
     }
 
     lastGyroRef.current = { alpha: e.alpha, beta: e.beta, gamma: e.gamma };
@@ -481,8 +486,8 @@ export default function FightingRoom({ onClose, username }) {
     const handleMouseMove = (e) => {
       if (document.pointerLockElement === canvasRef.current && !showExitConfirmRef.current) {
         // Multiplier controls mouse speed sensitivity
-        mouseLookRef.current.deltaX += e.movementX * 0.0028;
-        mouseLookRef.current.deltaY += e.movementY * 0.0028;
+        mouseLookRef.current.deltaX += e.movementX * desktopSensitivity;
+        mouseLookRef.current.deltaY += e.movementY * desktopSensitivity;
       }
     };
     document.addEventListener('mousemove', handleMouseMove);
@@ -580,8 +585,8 @@ export default function FightingRoom({ onClose, username }) {
 
     // Compute laser direction vector
     const p = playerRef.current;
-    const dx = Math.cos(p.pitch) * Math.sin(p.yaw);
-    const dy = Math.sin(p.pitch);
+    const dx = -Math.cos(p.pitch) * Math.sin(p.yaw);
+    const dy = -Math.sin(p.pitch);
     const dz = Math.cos(p.pitch) * Math.cos(p.yaw);
 
     // Laser Raycast trajectory
@@ -1066,13 +1071,42 @@ export default function FightingRoom({ onClose, username }) {
 
       // 1. PROCESS ROTATION LOOK & WALKING CONTROLS
       if (!isDead && !showExitConfirmRef.current) {
-        // Apply mouse movement looking angles
-        p.yaw += mouseLookRef.current.deltaX;
-        p.pitch = Math.max(-Math.PI / 2 + 0.02, Math.min(Math.PI / 2 - 0.02, p.pitch - mouseLookRef.current.deltaY));
-        
-        // Reset deltas
-        mouseLookRef.current.deltaX = 0;
-        mouseLookRef.current.deltaY = 0;
+        // Apply looking angles with standard non-inverted PUBG scheme and clamping
+        if (isMobile) {
+          // If touch look is active, the velocity matches the latest touch drag.
+          // If touch look is NOT active (user lifted thumb), the velocity decays exponentially (inertia).
+          if (!touchLookRef.current.active) {
+            // Apply exponential decay (friction damping) for glide inertia
+            touchLookVelocityRef.current.x *= 0.90; 
+            touchLookVelocityRef.current.y *= 0.90;
+          } else {
+            // Smoothly damp the touch look velocity slightly to avoid high-frequency jitter
+            touchLookVelocityRef.current.x *= 0.70; 
+            touchLookVelocityRef.current.y *= 0.70;
+          }
+
+          // Zero out tiny velocities to prevent float drift
+          if (Math.abs(touchLookVelocityRef.current.x) < 0.0001) touchLookVelocityRef.current.x = 0;
+          if (Math.abs(touchLookVelocityRef.current.y) < 0.0001) touchLookVelocityRef.current.y = 0;
+
+          // Apply rotation updates
+          p.yaw += touchLookVelocityRef.current.x;
+          
+          // Strict vertical clamping (pitch) at 90 degrees (Math.PI / 2 radians)
+          const clampAngle = Math.PI / 2;
+          p.pitch = Math.max(-clampAngle, Math.min(clampAngle, p.pitch + touchLookVelocityRef.current.y));
+        } else {
+          // Desktop pointer lock camera look: Subtract deltaX to turn right when mouse moves right
+          p.yaw -= mouseLookRef.current.deltaX;
+          
+          // Strict vertical clamping (pitch) at 90 degrees (Math.PI / 2 radians)
+          const clampAngle = Math.PI / 2;
+          p.pitch = Math.max(-clampAngle, Math.min(clampAngle, p.pitch + mouseLookRef.current.deltaY));
+          
+          // Reset deltas
+          mouseLookRef.current.deltaX = 0;
+          mouseLookRef.current.deltaY = 0;
+        }
 
         // Visual recoil easing
         p.recoil *= Math.max(0, 1 - 10 * dt);
@@ -1092,7 +1126,15 @@ export default function FightingRoom({ onClose, username }) {
         if (keysRef.current.d) { moveX += rightX; moveZ += rightZ; }
         if (keysRef.current.a) { moveX -= rightX; moveZ -= rightZ; }
 
-        // Mobile touch joystick override calculations
+        // Normalize keyboard vector if it has length to prevent fast diagonal moving
+        const keyboardLen = Math.hypot(moveX, moveZ);
+        if (keyboardLen > 0) {
+          moveX /= keyboardLen;
+          moveZ /= keyboardLen;
+        }
+
+        // Mobile touch joystick calculations:
+        // Left side movement zone maps relative to the initial touch start center point.
         if (touchJoystickRef.current.active) {
           const tj = touchJoystickRef.current;
           const dx = tj.currentX - tj.startX;
@@ -1101,9 +1143,11 @@ export default function FightingRoom({ onClose, username }) {
           const maxD = 40;
           const power = Math.min(1.0, dist / maxD);
           
-          const angle = Math.atan2(dx, -dy) - p.yaw;
-          moveX = Math.sin(angle) * power;
-          moveZ = Math.cos(angle) * power;
+          const joystickX = dx / dist; // strafe left/right
+          const joystickY = -dy / dist; // forward/backward (negative dy is up/forward)
+          
+          moveX = (forwardX * joystickY + rightX * joystickX) * power;
+          moveZ = (forwardZ * joystickY + rightZ * joystickX) * power;
         }
 
         // Apply walking movement with sliding wall friction sliding check
@@ -1835,42 +1879,58 @@ export default function FightingRoom({ onClose, username }) {
     onClose();
   };
 
-  // Touch handlers for mobile Joystick
+  // Touch handlers for mobile Joystick and Look Touchpad (Dual System with multi-touch tracking)
   const handleTouchStart = (e) => {
     if (isDead) return;
-    const touch = e.touches[0];
-    // Left half of screen runs the movement joystick
-    if (touch.clientX < window.innerWidth / 2) {
-      touchJoystickRef.current = {
-        startX: touch.clientX,
-        startY: touch.clientY,
-        currentX: touch.clientX,
-        currentY: touch.clientY,
-        active: true
-      };
-    } else {
-      // Right half operates looking view
-      touchLookRef.current = {
-        lastX: touch.clientX,
-        lastY: touch.clientY,
-        active: true
-      };
+    
+    // Iterate over all newly started touches
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const touch = e.changedTouches[i];
+      const isLeftHalf = touch.clientX < window.innerWidth / 2;
+      
+      if (isLeftHalf && touchJoystickIdRef.current === null) {
+        // Start Joystick touch
+        touchJoystickIdRef.current = touch.identifier;
+        touchJoystickRef.current = {
+          startX: touch.clientX,
+          startY: touch.clientY,
+          currentX: touch.clientX,
+          currentY: touch.clientY,
+          active: true
+        };
+      } else if (!isLeftHalf && touchLookIdRef.current === null) {
+        // Start Look Touchpad touch
+        touchLookIdRef.current = touch.identifier;
+        touchLookRef.current = {
+          lastX: touch.clientX,
+          lastY: touch.clientY,
+          active: true
+        };
+        // Reset look velocity when finger touch starts to prevent sudden jump from previous decay
+        touchLookVelocityRef.current = { x: 0, y: 0 };
+      }
     }
   };
 
   const handleTouchMove = (e) => {
     for (let i = 0; i < e.touches.length; i++) {
       const touch = e.touches[i];
-      if (touchJoystickRef.current.active && touch.clientX < window.innerWidth / 2) {
+      
+      if (touchJoystickIdRef.current !== null && touch.identifier === touchJoystickIdRef.current) {
         touchJoystickRef.current.currentX = touch.clientX;
         touchJoystickRef.current.currentY = touch.clientY;
-      } else if (touchLookRef.current.active && touch.clientX >= window.innerWidth / 2) {
+      } 
+      
+      else if (touchLookIdRef.current !== null && touch.identifier === touchLookIdRef.current) {
         const tl = touchLookRef.current;
         const dx = touch.clientX - tl.lastX;
         const dy = touch.clientY - tl.lastY;
         
-        playerRef.current.yaw += dx * 0.0075;
-        playerRef.current.pitch = Math.max(-Math.PI / 2 + 0.02, Math.min(Math.PI / 2 - 0.02, playerRef.current.pitch - dy * 0.0075));
+        const mobileLookSensitivity = 0.0035;
+        
+        // Feed into touchLookVelocityRef with standard orientation direction
+        touchLookVelocityRef.current.x = -dx * mobileLookSensitivity;
+        touchLookVelocityRef.current.y = -dy * mobileLookSensitivity;
 
         tl.lastX = touch.clientX;
         tl.lastY = touch.clientY;
@@ -1879,24 +1939,32 @@ export default function FightingRoom({ onClose, username }) {
   };
 
   const handleTouchEnd = (e) => {
-    if (e.touches.length === 0) {
-      touchJoystickRef.current.active = false;
-      touchLookRef.current.active = false;
-    } else {
-      // If one touch left, determine which one died
-      let hasLeftTouch = false;
-      let hasRightTouch = false;
-      for (let i = 0; i < e.touches.length; i++) {
-        if (e.touches[i].clientX < window.innerWidth / 2) hasLeftTouch = true;
-        else hasRightTouch = true;
+    // Check if tracked touches ended
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const touch = e.changedTouches[i];
+      
+      if (touchJoystickIdRef.current !== null && touch.identifier === touchJoystickIdRef.current) {
+        touchJoystickIdRef.current = null;
+        touchJoystickRef.current.active = false;
+      } 
+      
+      else if (touchLookIdRef.current !== null && touch.identifier === touchLookIdRef.current) {
+        touchLookIdRef.current = null;
+        touchLookRef.current.active = false;
+        // The velocity in touchLookVelocityRef remains for exponential decay (inertia) in the render loop!
       }
-      if (!hasLeftTouch) touchJoystickRef.current.active = false;
-      if (!hasRightTouch) touchLookRef.current.active = false;
     }
   };
 
   return (
-    <div ref={containerRef} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 text-slate-100 font-sans select-none overflow-hidden animate-fade-in">
+    <div 
+      ref={containerRef} 
+      className={isPlaying 
+        ? "fixed inset-0 z-50 flex items-center justify-center bg-slate-950 text-slate-100 font-sans select-none overflow-hidden animate-fade-in"
+        : "fixed inset-0 z-50 flex flex-col items-center justify-start md:justify-center bg-slate-950 text-slate-100 font-sans select-none overflow-y-auto py-6 md:py-12 animate-fade-in min-h-[100dvh]"
+      }
+      style={!isPlaying ? { minHeight: '100dvh' } : {}}
+    >
       {/* Portrait Mode Warning Overlay */}
       {isMobile && isPortrait && (
         <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-xl text-center p-6 animate-fade-in">
@@ -1926,16 +1994,16 @@ export default function FightingRoom({ onClose, username }) {
 
       {!isPlaying ? (
         // Start/Lobby Screen
-        <div className="max-w-md w-full mx-4 p-8 rounded-3xl border border-slate-800 bg-slate-900/80 backdrop-blur-xl shadow-2xl flex flex-col items-center justify-center text-center animate-scale-up">
-          <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-500 shadow-lg shadow-violet-500/25 flex items-center justify-center mb-5 border border-white/10 shrink-0">
-            <Swords className="h-8 w-8 text-white animate-pulse" />
+        <div className="max-w-md w-full mx-4 p-5 sm:p-8 my-auto rounded-3xl border border-slate-800 bg-slate-900/80 backdrop-blur-xl shadow-2xl flex flex-col items-center justify-center text-center animate-scale-up">
+          <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-500 shadow-lg shadow-violet-500/25 flex items-center justify-center mb-3 sm:mb-5 border border-white/10 shrink-0">
+            <Swords className="h-6 w-6 sm:h-8 sm:w-8 text-white animate-pulse" />
           </div>
-          <h2 className="text-2xl font-extrabold tracking-tight text-white mb-2 uppercase">Cyber-Arena Room</h2>
-          <p className="text-xs text-slate-400 mb-6 max-w-xs leading-relaxed">
+          <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white mb-1.5 sm:mb-2 uppercase">Cyber-Arena Room</h2>
+          <p className="text-xs text-slate-400 mb-4 sm:mb-6 max-w-xs leading-relaxed">
             Enter the 3D grid vector shooting grounds. Fight autonomous security bots, gather glowing nanomed kits, and battle your connected chat roommates in real-time!
           </p>
 
-          <div className="w-full space-y-3 mb-8 text-left border-y border-slate-800/80 py-4.5">
+          <div className="w-full space-y-3 mb-5 sm:mb-8 text-left border-y border-slate-800/80 py-3 sm:py-4.5">
             <div className="flex items-center gap-3.5">
               <Compass className="w-5 h-5 text-violet-400" />
               <div>

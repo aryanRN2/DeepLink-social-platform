@@ -1258,3 +1258,64 @@ updateShopUI();
 
 // Start engine loop hooks
 requestAnimationFrame(updateGameLoop);
+
+// =================================================================
+// MOBILE VIRTUAL PEDALS EVENT BINDINGS
+// =================================================================
+function setupTouchControls() {
+  const pedalBrake = document.getElementById("pedal-brake");
+  const pedalGas = document.getElementById("pedal-gas");
+  
+  if (!pedalBrake || !pedalGas) return;
+  
+  // Prevent context menus on touch hold
+  const preventDefault = (e) => {
+    if (e.cancelable) e.preventDefault();
+  };
+  
+  pedalBrake.addEventListener('contextmenu', preventDefault);
+  pedalGas.addEventListener('contextmenu', preventDefault);
+  
+  // Brake Pedal Events
+  const pressBrake = (e) => {
+    if (e.cancelable) e.preventDefault();
+    keys['a'] = true;
+    pedalBrake.classList.add("active");
+  };
+  
+  const releaseBrake = (e) => {
+    if (e.cancelable) e.preventDefault();
+    keys['a'] = false;
+    pedalBrake.classList.remove("active");
+  };
+  
+  pedalBrake.addEventListener('touchstart', pressBrake, { passive: false });
+  pedalBrake.addEventListener('touchend', releaseBrake, { passive: false });
+  pedalBrake.addEventListener('touchcancel', releaseBrake, { passive: false });
+  pedalBrake.addEventListener('mousedown', pressBrake);
+  pedalBrake.addEventListener('mouseup', releaseBrake);
+  pedalBrake.addEventListener('mouseleave', releaseBrake);
+  
+  // Gas Pedal Events
+  const pressGas = (e) => {
+    if (e.cancelable) e.preventDefault();
+    keys['d'] = true;
+    pedalGas.classList.add("active");
+  };
+  
+  const releaseGas = (e) => {
+    if (e.cancelable) e.preventDefault();
+    keys['d'] = false;
+    pedalGas.classList.remove("active");
+  };
+  
+  pedalGas.addEventListener('touchstart', pressGas, { passive: false });
+  pedalGas.addEventListener('touchend', releaseGas, { passive: false });
+  pedalGas.addEventListener('touchcancel', releaseGas, { passive: false });
+  pedalGas.addEventListener('mousedown', pressGas);
+  pedalGas.addEventListener('mouseup', releaseGas);
+  pedalGas.addEventListener('mouseleave', releaseGas);
+}
+
+// Bind touch controls on DOM load
+setupTouchControls();

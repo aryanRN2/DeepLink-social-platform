@@ -636,3 +636,106 @@ body, html {
 .btn-skip-meme:active {
   transform: scale(0.95);
 }
+
+/* -----------------------------------------------------------------
+   VIRTUAL TOUCH PEDALS (MOBILE CONTROLS)
+   ----------------------------------------------------------------- */
+.touch-controls {
+  display: none; /* Hidden by default on desktop */
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  width: 100%;
+  padding: 0 32px;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 200;
+  pointer-events: none; /* Allow clicks to pass through container */
+}
+
+/* Show on mobile viewports or touch devices */
+@media (max-width: 1024px), (pointer: coarse) {
+  .touch-controls {
+    display: flex;
+  }
+}
+
+.touch-btn {
+  pointer-events: auto; /* Enable touch events on the buttons themselves */
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  transition: transform 0.1s ease, background 0.2s ease, border-color 0.2s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation; /* Eliminate touch tap delays */
+}
+
+.touch-btn:active {
+  transform: scale(0.88);
+}
+
+/* Brake Pedal Style */
+.brake-btn {
+  border-color: rgba(248, 113, 113, 0.3);
+  box-shadow: 0 0 15px rgba(248, 113, 113, 0.1), 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.brake-btn:active, .brake-btn.active {
+  background: rgba(248, 113, 113, 0.25);
+  border-color: #f87171;
+  box-shadow: 0 0 25px rgba(248, 113, 113, 0.4), 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.brake-btn .pedal-icon {
+  color: #f87171;
+  font-size: 20px;
+}
+
+.brake-btn .pedal-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #ef4444;
+}
+
+/* Gas Pedal Style */
+.gas-btn {
+  border-color: rgba(74, 222, 128, 0.3);
+  box-shadow: 0 0 15px rgba(74, 222, 128, 0.1), 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.gas-btn:active, .gas-btn.active {
+  background: rgba(74, 222, 128, 0.25);
+  border-color: #4ade80;
+  box-shadow: 0 0 25px rgba(74, 222, 128, 0.4), 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.gas-btn .pedal-icon {
+  color: #4ade80;
+  font-size: 20px;
+}
+
+.gas-btn .pedal-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #22c55e;
+}
+
+/* Optimizations for interactive UI elements */
+button, .btn-upgrade, .btn-primary, .btn-secondary, .btn-quick-upgrade {
+  touch-action: manipulation;
+}

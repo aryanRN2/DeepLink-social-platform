@@ -303,7 +303,7 @@ function generateTerrainAhead(targetX) {
     
     const segment = Bodies.rectangle(midX, midY + 400, length, 800, {
       isStatic: true,
-      friction: 0.95, // High grip tires
+      friction: 0.98, // High grip terrain
       render: {
         fillStyle: 'rgba(0,0,0,0)', // Invisible Matter render; drawn manually
         strokeStyle: 'rgba(0,0,0,0)'
@@ -427,8 +427,8 @@ function createBuggy(x, y) {
   // Bike Wheels (wheelbase of 64 units)
   const wheelRad = 20;
   const wheelOptions = {
-    friction: 0.82 + tiresMod * 0.022, // Grippy bike tires
-    density: 0.0016,
+    friction: 0.95 + tiresMod * 0.015, // High grip tires
+    density: 0.0035,                   // Heavier wheels for solid ground contact
     label: "wheel",
     render: { visible: false }
   };
@@ -437,12 +437,14 @@ function createBuggy(x, y) {
   const frontWheel = Bodies.circle(x + 32, y + 16, wheelRad, wheelOptions);
   
   // Perfectly rigid attachments instead of soft suspension springs
+  // stiffness 0.9 and damping 0.08 absorb physics solver micro-vibrations completely
   const backSpring = Constraint.create({
     bodyA: chassis,
     bodyB: backWheel,
     pointA: Vector.create(-32, 16), // Rear swingarm pivot anchor
     pointB: Vector.create(0, 0),
-    stiffness: 1.0,                 // Completely rigid connection
+    stiffness: 0.90,                // Extremely rigid
+    damping: 0.08,                  // Dampen micro-oscillations
     length: 0,
     render: { visible: false }
   });
@@ -452,7 +454,8 @@ function createBuggy(x, y) {
     bodyB: frontWheel,
     pointA: Vector.create(32, 16),  // Front forks pivot anchor
     pointB: Vector.create(0, 0),
-    stiffness: 1.0,                 // Completely rigid connection
+    stiffness: 0.90,                // Extremely rigid
+    damping: 0.08,                  // Dampen micro-oscillations
     length: 0,
     render: { visible: false }
   });
@@ -613,8 +616,8 @@ function handleControls(dt) {
     buggy.backWheel.torque = motorTorque;
     
     // Directly spin up back wheel using smooth, physically accurate Matter.js scale speeds
-    const maxAngularSpeed = 0.26 + engineLvl * 0.024; // Smooth scale matching radians per step
-    const spinSpeed = 0.012 + engineLvl * 0.002;
+    const maxAngularSpeed = 0.38 + engineLvl * 0.035; // Smooth scale matching radians per step
+    const spinSpeed = 0.018 + engineLvl * 0.003;
     Body.setAngularVelocity(buggy.backWheel, Math.min(maxAngularSpeed, buggy.backWheel.angularVelocity + spinSpeed));
     
     // Light front-wheel drive assist (low speed)

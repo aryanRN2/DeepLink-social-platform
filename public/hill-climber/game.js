@@ -606,51 +606,29 @@ function handleControls(dt) {
   
   let throttle = 0;
   
-  if (eitherGrounded) {
-    // GROUNDED MOTOR SPEED CONTROLS
-    if (gasActive && fuel > 0) {
-      throttle = 1.0;
-      // Core drive: Apply torque to drive wheel
-      const motorTorque = 0.045 + engineLvl * 0.007;
-      buggy.backWheel.torque = motorTorque;
-      
-      // Directly spin up back wheel using smooth, physically accurate Matter.js scale speeds
-      const maxAngularSpeed = 0.26 + engineLvl * 0.024; // Smooth scale matching radians per step
-      const spinSpeed = 0.012 + engineLvl * 0.002;
-      Body.setAngularVelocity(buggy.backWheel, Math.min(maxAngularSpeed, buggy.backWheel.angularVelocity + spinSpeed));
-      
-      // Light front-wheel drive assist (low speed)
-      if (buggy.chassis.speed < 8.0) {
-        buggy.frontWheel.torque = motorTorque * 0.25;
-        Body.setAngularVelocity(buggy.frontWheel, Math.min(maxAngularSpeed, buggy.frontWheel.angularVelocity + spinSpeed * 0.4));
-      }
-    }
+  if (gasActive && fuel > 0) {
+    throttle = 1.0;
+    // Core drive: Apply torque to drive wheel
+    const motorTorque = 0.045 + engineLvl * 0.007;
+    buggy.backWheel.torque = motorTorque;
     
-    if (brakeActive) {
-      throttle = 0.1;
-      // Active Braking: slow down wheels
-      Body.setAngularVelocity(buggy.backWheel, buggy.backWheel.angularVelocity * 0.82);
-      Body.setAngularVelocity(buggy.frontWheel, buggy.frontWheel.angularVelocity * 0.82);
-    }
-  } else {
-    // AIRBORNE FLIP CONTROL (Direct Chassis pitch torque & angular velocity)
-    // Swap directions to match classic Hill Climb Racing (Gas tilts nose UP, Brake tilts nose DOWN)
-    // and tone down the speed so it is smooth and extremely controllable.
-    const stabilizationTorque = 1.8 + stabilityLvl * 0.3;
-    const speedStep = 0.002 + stabilityLvl * 0.0004;
-    const maxAngularSpeed = 0.055 + stabilityLvl * 0.005;
+    // Directly spin up back wheel using smooth, physically accurate Matter.js scale speeds
+    const maxAngularSpeed = 0.26 + engineLvl * 0.024; // Smooth scale matching radians per step
+    const spinSpeed = 0.012 + engineLvl * 0.002;
+    Body.setAngularVelocity(buggy.backWheel, Math.min(maxAngularSpeed, buggy.backWheel.angularVelocity + spinSpeed));
     
-    if (gasActive && fuel > 0) {
-      // Gas: Tilt nose UP / pitch counter-clockwise (negative torque & velocity)
-      buggy.chassis.torque = -stabilizationTorque;
-      Body.setAngularVelocity(buggy.chassis, Math.max(-maxAngularSpeed, buggy.chassis.angularVelocity - speedStep));
+    // Light front-wheel drive assist (low speed)
+    if (buggy.chassis.speed < 8.0) {
+      buggy.frontWheel.torque = motorTorque * 0.25;
+      Body.setAngularVelocity(buggy.frontWheel, Math.min(maxAngularSpeed, buggy.frontWheel.angularVelocity + spinSpeed * 0.4));
     }
-    
-    if (brakeActive) {
-      // Brake: Tilt nose DOWN / pitch clockwise (positive torque & velocity)
-      buggy.chassis.torque = stabilizationTorque;
-      Body.setAngularVelocity(buggy.chassis, Math.min(maxAngularSpeed, buggy.chassis.angularVelocity + speedStep));
-    }
+  }
+  
+  if (brakeActive) {
+    throttle = 0.1;
+    // Active Braking: slow down wheels
+    Body.setAngularVelocity(buggy.backWheel, buggy.backWheel.angularVelocity * 0.82);
+    Body.setAngularVelocity(buggy.frontWheel, buggy.frontWheel.angularVelocity * 0.82);
   }
   
   // Fuel depletion

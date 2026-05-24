@@ -166,9 +166,9 @@
       background: var(--glass-bg);
       border: 2px dashed var(--glass-border);
       border-radius: 20px;
-      padding: 40px;
-      width: 90%;
-      max-width: 500px;
+      padding: 30px 40px;
+      width: 95%;
+      max-width: 530px;
       text-align: center;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5),
                   inset 0 0 20px rgba(0, 240, 255, 0.05);
@@ -215,12 +215,12 @@
       font-weight: 800;
       font-size: 16px;
       letter-spacing: 1px;
-      padding: 14px 36px;
+      padding: 12px 36px;
       border-radius: 12px;
       cursor: pointer;
       box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
       transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      margin-top: 15px;
+      margin-top: 10px;
     }
 
     .btn-action:hover {
@@ -233,28 +233,28 @@
       background: rgba(0, 0, 0, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 25px;
+      padding: 12px 16px;
+      margin-bottom: 15px;
       text-align: left;
     }
 
     .controls-panel h3 {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 2px;
       color: #8b8ba9;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding-bottom: 6px;
+      padding-bottom: 4px;
     }
 
     .control-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
-      font-size: 13px;
+      margin-bottom: 6px;
+      font-size: 12px;
     }
 
     .control-key {
@@ -263,8 +263,8 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-bottom: 3px solid rgba(255, 255, 255, 0.25);
       border-radius: 5px;
-      padding: 2px 8px;
-      font-size: 11px;
+      padding: 1px 6px;
+      font-size: 10px;
       font-weight: bold;
       color: var(--neon-blue);
     }
@@ -432,7 +432,6 @@
       z-index: 8;
     }
 
-    /* Display touch controls on touch screens or small viewports */
     @media (max-width: 1024px), (hover: none) {
       .touch-controls {
         display: flex;
@@ -503,12 +502,40 @@
       background: rgba(255, 0, 127, 0.25);
       box-shadow: 0 0 20px rgba(255, 0, 127, 0.5);
     }
+
+    /* --- PORTRAIT DEVICE ORIENTATION BLOCKER STYLES --- */
+    @keyframes phoneTilt {
+      0% { transform: rotate(0deg); }
+      30% { transform: rotate(-90deg); }
+      70% { transform: rotate(-90deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    .tilt-phone-icon {
+      font-size: 56px;
+      display: inline-block;
+      animation: phoneTilt 2.2s cubic-bezier(0.445, 0.05, 0.55, 0.95) infinite;
+      text-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+      margin-bottom: 12px;
+    }
   </style>
 </head>
 <body>
 
   <div class="glow-blob-1"></div>
   <div class="glow-blob-2"></div>
+
+  <!-- Portrait Orientation Blocker (Forces Landscape on Mobile) -->
+  <div id="orientation-blocker" class="overlay-screen" style="z-index: 999; display: none;">
+    <div class="glass-card" style="border-color: var(--neon-pink); max-width: 390px; padding: 30px;">
+      <div class="tilt-phone-icon">📱</div>
+      <h2 class="game-title" style="font-size: 22px; color: var(--neon-pink); text-shadow: 0 0 8px rgba(255,0,127,0.4);">ROTATE DEVICE</h2>
+      <p style="font-family: 'Share Tech Mono', monospace; font-size: 11px; color: #8b8ba9; letter-spacing: 2px; margin-top: 4px; text-transform: uppercase;">Landscape Required</p>
+      <p style="font-size: 13px; color: #d1d1f0; line-height: 1.6; margin-top: 15px; font-weight: 500;">
+        Gravity Flipper requires landscape mode! Please rotate your device to landscape to start playing.
+      </p>
+    </div>
+  </div>
 
   <!-- Arcade Cabinet Shell -->
   <div id="arcade-container" class="grav-normal">
@@ -563,6 +590,25 @@
         <h1 class="game-title"><span class="neon-text-blue">GRAVITY</span> <span class="neon-text-pink">FLIPPER</span></h1>
         <p class="game-subtitle">Anti-Gravity 2D Extreme Platformer</p>
         
+        <!-- --- RETRO CHARACTER SELECTION PANEL --- -->
+        <div class="controls-panel">
+          <h3>👤 Select Your Conductor</h3>
+          <div style="display: flex; gap: 15px; margin-top: 8px;">
+            <!-- Modi Ji (Active choice) -->
+            <div id="char-modiji" style="flex: 1; background: rgba(0, 240, 255, 0.15); border: 2px solid var(--neon-blue); padding: 10px; border-radius: 12px; text-align: center; box-shadow: 0 0 12px rgba(0, 240, 255, 0.25); cursor: pointer;">
+              <span style="font-size: 28px; display: block; margin-bottom: 2px;">🇮🇳</span>
+              <strong style="color: #fff; font-size: 13px; display: block; font-weight: 800;">Modi Ji</strong>
+              <span style="font-size: 8px; color: var(--neon-blue); font-family: 'Share Tech Mono', monospace; text-transform: uppercase;">Gravity Sovereign</span>
+            </div>
+            <!-- Locked Placeholder -->
+            <div style="flex: 1; background: rgba(255, 255, 255, 0.03); border: 2px dashed rgba(255, 255, 255, 0.08); padding: 10px; border-radius: 12px; text-align: center; cursor: not-allowed; opacity: 0.55;">
+              <span style="font-size: 28px; display: block; margin-bottom: 2px;">🔒</span>
+              <strong style="color: #8b8ba9; font-size: 13px; display: block; font-weight: 800;">Rahul G</strong>
+              <span style="font-size: 8px; color: #8b8ba9; font-family: 'Share Tech Mono', monospace; text-transform: uppercase;">LOCKED (Lvl 5)</span>
+            </div>
+          </div>
+        </div>
+
         <div class="controls-panel">
           <h3>🎮 Arcade Controls</h3>
           <div class="control-row">
@@ -577,10 +623,6 @@
             <div>
               <span class="control-key">Space</span> or <span class="control-key">▲</span> or <span class="control-key">W</span>
             </div>
-          </div>
-          <div class="control-row">
-            <span class="control-label">Flip Gravity (1s cooldown)</span>
-            <span class="control-key">Shift</span>
           </div>
         </div>
 
@@ -842,6 +884,17 @@
     let animationId = null;
     let gameActive = false;
 
+    // Conductor Character state
+    let selectedCharacter = 'modiji'; // Hard unlocked Modi Ji!
+
+    // --- DYNAMIC PNG CHARACTER IMAGE ENGINE ---
+    const charImg = new Image();
+    let charImgLoaded = false;
+    charImg.onload = () => {
+      charImgLoaded = true;
+    };
+    charImg.src = '/modi/character.png';
+
     // Keys state tracking
     const keys = {
       ArrowLeft: false, ArrowRight: false, KeyA: false, KeyD: false,
@@ -911,7 +964,7 @@
     const WORLD_WIDTH = 3000;
     const FLOOR_Y = 540;
     const CEILING_Y = 60;
-    const PLAYER_SIZE = 32;
+    const PLAYER_SIZE = 36; // Slightly larger to display details of your PNG image beautifully!
 
     let player = {
       x: 80,
@@ -1346,7 +1399,7 @@
     }
 
     // =================================================================
-    // RENDERING PIPELINE
+    // RENDERING PIPELINE (Modi Ji Custom Image Drawing)
     // =================================================================
     function render() {
       ctx.fillStyle = '#02000c';
@@ -1607,7 +1660,7 @@
         ctx.restore();
       });
 
-      // Player Visuals
+      // --- PLAYER SPRITE DRAWING PIPELINE (Supports Modi Ji Image with rotation) ---
       ctx.save();
       ctx.translate(player.x + PLAYER_SIZE/2, player.y + PLAYER_SIZE/2);
       ctx.rotate(player.rotation);
@@ -1615,35 +1668,71 @@
       const walkBob = Math.sin(player.walkCycle) * 2;
       ctx.translate(0, walkBob);
 
-      ctx.fillStyle = '#00f0ff';
-      ctx.fillRect(-PLAYER_SIZE/2, -PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE);
-
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2.5;
-      ctx.strokeRect(-PLAYER_SIZE/2, -PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE);
-
-      ctx.fillStyle = '#100c28';
-      ctx.fillRect(-10, -6, 20, 8);
-
-      const blink = Math.random() > 0.98 ? 0.05 : 1.0;
-      ctx.fillStyle = '#39ff14';
-      if (blink > 0.5) {
-        ctx.fillRect(-6, -4, 4, 4);
-        ctx.fillRect(2, -4, 4, 4);
+      if (selectedCharacter === 'modiji' && charImgLoaded) {
+        // --- DRAW CUSTOM PROVIDE MODI JI IMAGE ---
+        ctx.drawImage(charImg, -PLAYER_SIZE/2, -PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE);
+      } else if (selectedCharacter === 'modiji') {
+        // --- FALLBACK: DRAW RETRO PIXEL MODI JI ---
+        ctx.fillStyle = '#ff9933'; 
+        ctx.fillRect(-PLAYER_SIZE/2, -PLAYER_SIZE/6, PLAYER_SIZE, PLAYER_SIZE * 0.66);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-6, -PLAYER_SIZE/6, 12, 4);
+        ctx.fillStyle = '#ffd700'; 
+        ctx.beginPath();
+        ctx.arc(0, 2, 2, 0, Math.PI * 2);
+        ctx.arc(0, 8, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fce2c6'; 
+        ctx.fillRect(-12, -PLAYER_SIZE/2, 24, 16);
+        ctx.fillStyle = '#f3f4f6'; 
+        ctx.fillRect(-PLAYER_SIZE/2, -PLAYER_SIZE/2, 4, 16);
+        ctx.fillRect(PLAYER_SIZE/2 - 4, -PLAYER_SIZE/2, 4, 16);
+        ctx.fillRect(-10, -5, 20, 7);
+        ctx.beginPath();
+        ctx.arc(0, 2, 10, 0, Math.PI);
+        ctx.fill();
+        ctx.strokeStyle = '#111827'; 
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(-8, -12, 5, 5);
+        ctx.strokeRect(3, -12, 5, 5);
+        ctx.beginPath();
+        ctx.moveTo(-3, -10);
+        ctx.lineTo(3, -10);
+        ctx.stroke();
+        const blink = Math.random() > 0.985 ? 0.05 : 1.0;
+        ctx.fillStyle = '#00f0ff'; 
+        if (blink > 0.5) {
+          ctx.fillRect(-6, -11, 2, 2);
+          ctx.fillRect(5, -11, 2, 2);
+        }
+      } else {
+        // --- DRAW DEFAULT CYBER BOT ---
+        ctx.fillStyle = '#00f0ff';
+        ctx.fillRect(-PLAYER_SIZE/2, -PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(-PLAYER_SIZE/2, -PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE);
+        ctx.fillStyle = '#100c28';
+        ctx.fillRect(-10, -6, 20, 8);
+        const blink = Math.random() > 0.98 ? 0.05 : 1.0;
+        ctx.fillStyle = '#39ff14';
+        if (blink > 0.5) {
+          ctx.fillRect(-6, -4, 4, 4);
+          ctx.fillRect(2, -4, 4, 4);
+        }
+        ctx.strokeStyle = '#00f0ff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, -PLAYER_SIZE/2);
+        ctx.lineTo(0, -PLAYER_SIZE/2 - 6);
+        ctx.stroke();
+        ctx.fillStyle = '#ff007f';
+        ctx.beginPath();
+        ctx.arc(0, -PLAYER_SIZE/2 - 6, 2.5, 0, Math.PI * 2);
+        ctx.fill();
       }
 
-      ctx.strokeStyle = '#00f0ff';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(0, -PLAYER_SIZE/2);
-      ctx.lineTo(0, -PLAYER_SIZE/2 - 6);
-      ctx.stroke();
-
-      ctx.fillStyle = '#ff007f';
-      ctx.beginPath();
-      ctx.arc(0, -PLAYER_SIZE/2 - 6, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-
+      // Mechanical walking feet
       ctx.fillStyle = '#1a1a3a';
       const feetOffset1 = Math.sin(player.walkCycle * 0.9) * 4;
       const feetOffset2 = -Math.sin(player.walkCycle * 0.9) * 4;
@@ -1746,7 +1835,6 @@
       cancelAnimationFrame(animationId);
       audioSynth.playDeath();
 
-      // Reset all movement states when dying
       keys.ArrowLeft = false;
       keys.ArrowRight = false;
       keys.KeyA = false;
@@ -1834,7 +1922,6 @@
       }
       victoryFrame();
 
-      // Exit fullscreen on victory to see arcade again nicely
       if (document.exitFullscreen) {
         document.exitFullscreen().catch(err => {});
       }
@@ -1844,11 +1931,28 @@
       }, 800);
     }
 
+    // --- DYNAMIC PORTRAIT BLOCKER TRIGGERS ---
+    function checkOrientation() {
+      const blocker = document.getElementById('orientation-blocker');
+      // True mobile/touch screen detection
+      const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+      const isPortrait = window.innerHeight > window.innerWidth;
+      
+      if (isMobile && isPortrait) {
+        blocker.style.display = 'flex';
+      } else {
+        blocker.style.display = 'none';
+      }
+    }
+    
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+    checkOrientation(); // Run instantly on load
+
     function resetChallenge() {
       document.getElementById('gameover-screen').classList.add('hidden');
       document.getElementById('victory-screen').classList.add('hidden');
       
-      // Re-trigger fullscreen on retry
       const container = document.getElementById('arcade-container');
       if (container.requestFullscreen) {
         container.requestFullscreen().catch(err => {});
@@ -1869,7 +1973,6 @@
     const touchJump = document.getElementById('touch-jump');
     const touchFlip = document.getElementById('touch-flip');
 
-    // Touch events for mobile phones (Multi-touch support)
     touchLeft.addEventListener('touchstart', (e) => { e.preventDefault(); keys.KeyA = true; });
     touchLeft.addEventListener('touchend', (e) => { e.preventDefault(); keys.KeyA = false; });
 
@@ -1884,7 +1987,6 @@
       if (gameActive) triggerGravityFlip(); 
     });
 
-    // Mouse events mapping for easy desktop emulator testing
     touchLeft.addEventListener('mousedown', (e) => { keys.KeyA = true; });
     touchLeft.addEventListener('mouseup', (e) => { keys.KeyA = false; });
     touchLeft.addEventListener('mouseleave', (e) => { keys.KeyA = false; });

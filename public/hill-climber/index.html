@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neon Hill Climber 2D - Matter.js Edition</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Matter.js Physics Engine -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+</head>
+<body>
+
+  <!-- Game Canvas Container -->
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+  </div>
+
+  <!-- HUD Dashboard -->
+  <div id="hud-dashboard" class="hud-panel hidden">
+    <div class="hud-metric">
+      <span class="hud-label">ACTIVE DISTANCE</span>
+      <span id="hud-distance" class="hud-value neon-blue">0.0 <span class="hud-unit">meters</span></span>
+    </div>
+    
+    <div class="hud-metric hud-center">
+      <span class="hud-label">GASOLINE TANK</span>
+      <div class="fuel-bar-container">
+        <div id="hud-fuel-bar" class="fuel-bar-fill"></div>
+        <span id="hud-fuel-text" class="fuel-pct-text">100%</span>
+      </div>
+    </div>
+
+    <div class="hud-metric hud-right">
+      <span class="hud-label">RUN COINS</span>
+      <span id="hud-coins" class="hud-value neon-amber">🪙 0</span>
+    </div>
+  </div>
+
+  <!-- Airtime Toast Notification -->
+  <div id="airtime-toast" class="toast-message"></div>
+
+  <!-- Start Game / Upgrades Menu Screen -->
+  <div id="start-screen" class="overlay-screen">
+    <div class="glass-card main-menu-card">
+      <h1 class="game-title"><span class="neon-purple-text">NEON</span> <span class="neon-green-text">HILL CLIMBER</span></h1>
+      <p class="game-subtitle">MATTER.JS 2D PHYSICS RACING</p>
+
+      <div class="currency-display">
+        <span>Persistent Coins:</span>
+        <span id="menu-coin-balance" class="balance-value">🪙 0</span>
+      </div>
+
+      <!-- Upgrade Shop Grid -->
+      <div class="upgrade-grid">
+        <!-- Engine Upgrade -->
+        <div class="upgrade-card" data-upgrade="engine">
+          <div class="upgrade-icon">🏎️</div>
+          <div class="upgrade-info">
+            <span class="upgrade-name">Engine Torque</span>
+            <span class="upgrade-desc">Climb hills with high acceleration</span>
+          </div>
+          <div class="upgrade-footer">
+            <span class="upgrade-level" id="level-engine">Lvl 1/10</span>
+            <button class="btn-upgrade" id="btn-upgrade-engine" onclick="buyUpgrade('engine')">🪙 250</button>
+          </div>
+        </div>
+
+        <!-- Suspension Upgrade -->
+        <div class="upgrade-card" data-upgrade="suspension">
+          <div class="upgrade-icon">🚀</div>
+          <div class="upgrade-info">
+            <span class="upgrade-name">Suspension</span>
+            <span class="upgrade-desc">Bounce reduction & more clearance</span>
+          </div>
+          <div class="upgrade-footer">
+            <span class="upgrade-level" id="level-suspension">Lvl 1/10</span>
+            <button class="btn-upgrade" id="btn-upgrade-suspension" onclick="buyUpgrade('suspension')">🪙 250</button>
+          </div>
+        </div>
+
+        <!-- Tires Upgrade -->
+        <div class="upgrade-card" data-upgrade="tires">
+          <div class="upgrade-icon">🛞</div>
+          <div class="upgrade-info">
+            <span class="upgrade-name">Tire Traction</span>
+            <span class="upgrade-desc">Extreme grip on steep inclinations</span>
+          </div>
+          <div class="upgrade-footer">
+            <span class="upgrade-level" id="level-tires">Lvl 1/10</span>
+            <button class="btn-upgrade" id="btn-upgrade-tires" onclick="buyUpgrade('tires')">🪙 250</button>
+          </div>
+        </div>
+
+        <!-- Stability Upgrade -->
+        <div class="upgrade-card" data-upgrade="stability">
+          <div class="upgrade-icon">⚖️</div>
+          <div class="upgrade-info">
+            <span class="upgrade-name">In-Air Stability</span>
+            <span class="upgrade-desc">Stronger rotational self-leveling</span>
+          </div>
+          <div class="upgrade-footer">
+            <span class="upgrade-level" id="level-stability">Lvl 1/10</span>
+            <button class="btn-upgrade" id="btn-upgrade-stability" onclick="buyUpgrade('stability')">🪙 250</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls Cheat Sheet -->
+      <div class="controls-legend">
+        <div><strong>A / Left Arrow</strong> Brake & Rotate Left (Air)</div>
+        <div><strong>D / Right Arrow</strong> Accelerate & Rotate Right (Air)</div>
+      </div>
+
+      <button id="btn-start" class="btn-primary" onclick="startGame()">DRIVE Cyber-Bike</button>
+    </div>
+  </div>
+
+  <!-- Game Over Screen -->
+  <div id="gameover-screen" class="overlay-screen hidden">
+    <div class="glass-card gameover-card">
+      <h2 id="gameover-title" class="neon-red-text">CRASHED!</h2>
+      <p id="gameover-reason" class="gameover-subtitle">Neck Flip Crash</p>
+
+      <div class="gameover-stats">
+        <div class="stat-item">
+          <span class="stat-lbl">Distance Reached</span>
+          <span id="stat-distance" class="stat-val neon-blue">0.0m</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-lbl">Coins Collected</span>
+          <span id="stat-coins" class="stat-val neon-amber">🪙 0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-lbl">Persistent Balance</span>
+          <span id="stat-balance" class="stat-val text-white">🪙 0</span>
+        </div>
+      </div>
+
+      <!-- Quick Shop in Game Over screen -->
+      <div class="quick-shop">
+        <h3>Quick Garage Upgrades</h3>
+        <div class="quick-shop-row">
+          <button class="btn-quick-upgrade" id="quick-upgrade-engine" onclick="buyUpgrade('engine')">
+            <span>🏎️ Engine</span>
+            <span class="quick-cost" id="quick-cost-engine">🪙 250</span>
+          </button>
+          <button class="btn-quick-upgrade" id="quick-upgrade-suspension" onclick="buyUpgrade('suspension')">
+            <span>🚀 Suspension</span>
+            <span class="quick-cost" id="quick-cost-suspension">🪙 250</span>
+          </button>
+          <button class="btn-quick-upgrade" id="quick-upgrade-tires" onclick="buyUpgrade('tires')">
+            <span>🛞 Tires</span>
+            <span class="quick-cost" id="quick-cost-tires">🪙 250</span>
+          </button>
+          <button class="btn-quick-upgrade" id="quick-upgrade-stability" onclick="buyUpgrade('stability')">
+            <span>⚖️ Stability</span>
+            <span class="quick-cost" id="quick-cost-stability">🪙 250</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="gameover-actions">
+        <button id="btn-restart" class="btn-primary" onclick="restartGame()">Drive Again</button>
+        <button id="btn-menu" class="btn-secondary" onclick="showMainMenu()">Main Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Death Meme Overlay -->
+  <div id="meme-overlay" class="meme-container hidden">
+    <video id="meme-video" src="/death-meme.mp4" playsinline preload="auto"></video>
+    <button id="btn-skip-meme" class="btn-skip-meme" onclick="skipDeathMeme()">Skip ➔</button>
+  </div>
+
+  <!-- Audio Synth & Core Game Script -->
+  <script src="game.js"></script>
+</body>
+</html>

@@ -614,9 +614,9 @@ function handleControls(dt) {
       const motorTorque = 0.045 + engineLvl * 0.007;
       buggy.backWheel.torque = motorTorque;
       
-      // Directly spin up back wheel for premium hill-climbing feel
-      const maxAngularSpeed = 24 + engineLvl * 1.6;
-      const spinSpeed = 0.16 + engineLvl * 0.035;
+      // Directly spin up back wheel using smooth, physically accurate Matter.js scale speeds
+      const maxAngularSpeed = 0.26 + engineLvl * 0.024; // Smooth scale matching radians per step
+      const spinSpeed = 0.012 + engineLvl * 0.002;
       Body.setAngularVelocity(buggy.backWheel, Math.min(maxAngularSpeed, buggy.backWheel.angularVelocity + spinSpeed));
       
       // Light front-wheel drive assist (low speed)

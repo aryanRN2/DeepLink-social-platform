@@ -260,6 +260,7 @@ let fuel = 100.0;
 let coinsCollected = 0;
 let airtimeCount = 0;
 let isMemePlaying = false;
+let snapCameraNextFrame = true;
 
 // Terrain settings
 const TERRAIN_SEGMENT_WIDTH = 40;
@@ -391,11 +392,17 @@ function createBuggy(x, y) {
   const chassisW = 64;
   const chassisH = 20;
   
+  // Create a unique negative collision group to completely disable self-collision between bike parts
+  const bikeGroup = Body.nextGroup(true);
+  
   // Chassis/Frame body
   const chassis = Bodies.rectangle(x, y, chassisW, chassisH, {
     density: 0.0022, 
     frictionAir: 0.08, // Snap-reactive angular damping for motorcycle stunts
     label: "chassis",
+    collisionFilter: {
+      group: bikeGroup
+    },
     render: { visible: false }
   });
   
@@ -411,6 +418,9 @@ function createBuggy(x, y) {
     isSensor: true,
     density: 0.0001,
     label: "head",
+    collisionFilter: {
+      group: bikeGroup
+    },
     render: { visible: false }
   });
 
@@ -430,6 +440,9 @@ function createBuggy(x, y) {
     friction: 0.95 + tiresMod * 0.015, // High grip tires
     density: 0.0035,                   // Heavier wheels for solid ground contact
     label: "wheel",
+    collisionFilter: {
+      group: bikeGroup
+    },
     render: { visible: false }
   };
   
@@ -530,7 +543,8 @@ function resetScene() {
   Runner.run(runner, engine);
   
   // Resets
-  lastTerrainX = 0;
+  lastTerrainX = -1200;
+  snapCameraNextFrame = true;
   generatedTerrainPoints = [];
   terrainBodies = [];
   collectibles = [];
@@ -674,9 +688,17 @@ function updateCamera() {
   const viewW = currentCam.max.x - currentCam.min.x;
   const viewH = currentCam.max.y - currentCam.min.y;
   
-  // Linear Interpolation (lerp) for smooth camera panning
-  const smoothX = render.bounds.min.x + (targetCamX - viewW / 2.8 - render.bounds.min.x) * 0.095;
-  const smoothY = render.bounds.min.y + (targetCamY - viewH / 1.8 - render.bounds.min.y) * 0.065;
+  let smoothX, smoothY;
+  
+  if (snapCameraNextFrame) {
+    smoothX = targetCamX - viewW / 2.8;
+    smoothY = targetCamY - viewH / 1.8;
+    snapCameraNextFrame = false; // Reset flag
+  } else {
+    // Linear Interpolation (lerp) for smooth camera panning
+    smoothX = render.bounds.min.x + (targetCamX - viewW / 2.8 - render.bounds.min.x) * 0.095;
+    smoothY = render.bounds.min.y + (targetCamY - viewH / 1.8 - render.bounds.min.y) * 0.065;
+  }
   
   Render.lookAt(render, {
     min: { x: smoothX, y: smoothY },
@@ -1322,3 +1344,19 @@ function setupTouchControls() {
 
 // Bind touch controls on DOM load
 setupTouchControls();
+
+// Handle screen rotation and window resizing dynamically
+window.addEventListener('resize', () => {
+  if (!render) return;
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  
+  render.canvas.width = width;
+  render.canvas.height = height;
+  render.options.width = width;
+  render.options.height = height;
+  
+  // Snap camera instantly to prevent visual black borders during rotation
+  snapCameraNextFrame = true;
+  updateCamera();
+});

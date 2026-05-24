@@ -739,3 +739,150 @@ body, html {
 button, .btn-upgrade, .btn-primary, .btn-secondary, .btn-quick-upgrade {
   touch-action: manipulation;
 }
+
+/* -----------------------------------------------------------------
+   PORTRAIT ORIENTATION AUTO-ROTATOR (FORCES LANDSCAPE PLAYABILITY)
+   ----------------------------------------------------------------- */
+@media (max-width: 1024px) and (orientation: portrait), (pointer: coarse) and (orientation: portrait) {
+  html, body {
+    width: 100vh !important;
+    height: 100vw !important;
+    transform: rotate(90deg);
+    transform-origin: top left;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    overflow: hidden;
+  }
+  
+  #game-container, #game-canvas, .overlay-screen, .hud-panel, .touch-controls {
+    width: 100vh !important;
+    height: 100vw !important;
+  }
+
+  .hud-panel {
+    top: 12px !important;
+    padding: 10px 20px !important;
+  }
+
+  .touch-controls {
+    bottom: 16px !important;
+    padding: 0 24px !important;
+  }
+
+  .glass-card {
+    padding: 20px 24px !important;
+  }
+
+  .game-title {
+    font-size: 28px !important;
+  }
+
+  .upgrade-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .upgrade-card {
+    padding: 8px 10px !important;
+    gap: 8px !important;
+  }
+
+  .upgrade-icon {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 18px !important;
+  }
+
+  .upgrade-name {
+    font-size: 11px !important;
+  }
+
+  .upgrade-desc {
+    font-size: 8px !important;
+  }
+
+  .btn-upgrade {
+    padding: 4px 8px !important;
+    font-size: 10px !important;
+  }
+
+  .btn-primary {
+    padding: 10px 20px !important;
+    font-size: 13px !important;
+  }
+
+  .controls-legend {
+    margin-bottom: 12px !important;
+    padding: 6px !important;
+    font-size: 9px !important;
+  }
+}
+
+/* -----------------------------------------------------------------
+   PORTRAIT ORIENTATION BLOCKER
+   ----------------------------------------------------------------- */
+.orientation-blocker {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #080c15;
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 24px;
+}
+
+.blocker-content {
+  max-width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #ffffff;
+}
+
+.phone-rotate-icon {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 50%;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+}
+
+.rotate-phone-svg {
+  color: #818cf8;
+  animation: rotate-phone 2.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+}
+
+@keyframes rotate-phone {
+  0% {
+    transform: rotate(0deg);
+  }
+  30%, 100% {
+    transform: rotate(-90deg);
+  }
+}
+
+.blocker-content h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+.blocker-content p {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.5;
+}

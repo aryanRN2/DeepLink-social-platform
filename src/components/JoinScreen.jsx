@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { MessageSquare, ArrowRight, ShieldCheck, Eye, EyeOff, UserCheck, Share2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import VehicleGame from './VehicleGame';
+import AntiGravityGame from './AntiGravityGame';
 
 const DEEPLINK_MEMBERS = [
   { id: 'aryan', name: 'Aryan', avatar: '👾', status: 'Core Developer' },
@@ -25,7 +26,7 @@ export default function JoinScreen({ onJoin }) {
   const [isVerifying, setIsVerifying] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState('granted');
   const [activeStep, setActiveStep] = useState(1);
-  const [showGame, setShowGame] = useState(false);
+  const [showGame, setShowGame] = useState(null); // 'buggy' | 'gravity' | null
 
 
 
@@ -117,17 +118,24 @@ export default function JoinScreen({ onJoin }) {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-8 relative overflow-hidden font-sans">
-      {/* Floating Buggy Game Button in Top Right */}
-      <div className="absolute top-4 right-4 z-30">
+      {/* Floating Arcade Game Buttons in Top Right */}
+      <div className="absolute top-4 right-4 z-30 flex flex-wrap gap-2 justify-end">
         <button
-          onClick={() => setShowGame(true)}
+          onClick={() => setShowGame('buggy')}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/85 backdrop-blur-md border border-slate-200 text-indigo-600 hover:bg-indigo-50/55 hover:border-indigo-400 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md cursor-pointer font-extrabold text-xs sm:text-sm"
+        >
+          🏎️ Play Buggy Game
+        </button>
+        <button
+          onClick={() => setShowGame('gravity')}
           className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/85 backdrop-blur-md border border-slate-200 text-indigo-600 hover:bg-indigo-50/55 hover:border-indigo-400 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md cursor-pointer font-extrabold text-xs sm:text-sm animate-pulse"
         >
-          🎮 Play Buggy Game
+          🌀 Play Gravity Flipper
         </button>
       </div>
 
-      {showGame && <VehicleGame onClose={() => setShowGame(false)} />}
+      {showGame === 'buggy' && <VehicleGame onClose={() => setShowGame(null)} />}
+      {showGame === 'gravity' && <AntiGravityGame onClose={() => setShowGame(null)} />}
       {/* Soft color-ambient backdrop blobs */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-64 md:w-96 h-64 md:h-96 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-64 md:w-96 h-64 md:h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>

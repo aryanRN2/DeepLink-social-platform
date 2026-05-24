@@ -95,11 +95,11 @@ export default function AntiGravityGame({ onClose }) {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-md p-4 font-sans select-none animate-fade-in text-slate-800">
-      <div className="w-full max-w-5xl h-[88vh] bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200/50 flex flex-col relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-md p-0 md:p-4 font-sans select-none animate-fade-in text-slate-800">
+      <div className="w-full h-full md:max-w-5xl md:h-[88vh] bg-white rounded-none md:rounded-3xl overflow-hidden shadow-2xl border-none md:border md:border-slate-200/50 flex flex-col relative">
         
         {/* Header toolbar */}
-        <div className="bg-slate-50 border-b border-slate-150 px-6 py-4 flex items-center justify-between">
+        <div className="bg-slate-50 border-b border-slate-150 px-4 py-2.5 md:px-6 md:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <span className="text-2xl text-indigo-600 animate-bounce">🌀</span>
             <div>

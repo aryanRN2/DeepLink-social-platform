@@ -71,7 +71,12 @@
 
     /* Arcade Cabinet Box */
     #arcade-container {
-      position: relative;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-top: -300px;
+      margin-left: -400px;
+      transform-origin: center center;
       z-index: 2;
       width: 800px;
       height: 600px;
@@ -107,6 +112,11 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      position: relative !important;
+      top: auto !important;
+      left: auto !important;
+      margin: 0 !important;
+      transform: none !important;
     }
 
     #arcade-container:fullscreen #game-canvas {
@@ -126,6 +136,11 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      position: relative !important;
+      top: auto !important;
+      left: auto !important;
+      margin: 0 !important;
+      transform: none !important;
     }
 
     #arcade-container:-webkit-full-screen #game-canvas {
@@ -1960,9 +1975,45 @@
       }
     }
     
-    window.addEventListener('resize', checkOrientation);
-    window.addEventListener('orientationchange', checkOrientation);
-    checkOrientation(); // Run instantly on load
+    window.addEventListener('resize', () => {
+      checkOrientation();
+      resizeCabinet();
+    });
+    window.addEventListener('orientationchange', () => {
+      checkOrientation();
+      resizeCabinet();
+    });
+    
+    // --- AUTOMATIC MOBILE SCALING ENGINE ---
+    function resizeCabinet() {
+      const container = document.getElementById('arcade-container');
+      if (!container) return;
+      
+      if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+        container.style.transform = 'none';
+        container.style.top = 'auto';
+        container.style.left = 'auto';
+        return;
+      }
+
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      
+      const scaleX = w / 800;
+      const scaleY = h / 600;
+      const scale = Math.min(scaleX, scaleY, 1);
+      
+      container.style.transform = `scale(${scale})`;
+      
+      container.style.position = 'absolute';
+      container.style.top = '50%';
+      container.style.left = '50%';
+      container.style.marginTop = '-300px';
+      container.style.marginLeft = '-400px';
+    }
+
+    checkOrientation();
+    setTimeout(resizeCabinet, 50);
 
     function resetChallenge() {
       document.getElementById('gameover-screen').classList.add('hidden');

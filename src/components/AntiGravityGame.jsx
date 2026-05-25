@@ -95,54 +95,54 @@ export default function AntiGravityGame({ onClose }) {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-md p-0 md:p-4 font-sans select-none animate-fade-in text-slate-800">
-      <div className="w-full h-full md:max-w-5xl md:h-[88vh] bg-white rounded-none md:rounded-3xl overflow-hidden shadow-2xl border-none md:border md:border-slate-200/50 flex flex-col relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-md p-0 md:p-4 font-sans select-none animate-fade-in text-slate-850">
+      <div className="w-full h-full md:max-w-5xl md:h-[88vh] bg-[#02000a] rounded-none md:rounded-3xl overflow-hidden shadow-2xl border-none md:border md:border-indigo-950/30 flex flex-col relative">
         
-        {/* Header toolbar */}
-        <div className="bg-slate-50 border-b border-slate-150 px-4 py-2.5 md:px-6 md:py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className="text-2xl text-indigo-600 animate-bounce">🌀</span>
+        {/* Sleek Dark Premium Header toolbar */}
+        <div className="bg-[#060610] border-b border-indigo-950/40 px-3 py-1.5 md:px-6 md:py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 md:gap-2.5">
+            <span className="text-xl md:text-2xl text-indigo-500 animate-pulse">🌀</span>
             <div>
-              <h2 className="text-base font-extrabold text-slate-900 tracking-tight leading-tight">Gravity Flipper</h2>
-              <p className="text-3xs text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-1">
-                <Sparkles className="w-2.5 h-2.5 text-indigo-500" /> Quantum Grid Platformer
+              <h2 className="text-sm md:text-base font-extrabold text-white tracking-tight leading-tight">Gravity Flipper</h2>
+              <p className="text-4xs md:text-3xs text-indigo-400 font-semibold uppercase tracking-wider flex items-center gap-1">
+                <Sparkles className="w-2 md:w-2.5 h-2 md:h-2.5 text-indigo-400" /> Quantum Grid Platformer
               </p>
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             {/* Lobby Coin balance indicator */}
-            <div className="flex items-center gap-2 bg-amber-50 border border-amber-100/60 px-3 py-1.5 rounded-xl">
-              <Coins className="w-4 h-4 text-amber-500 animate-pulse" />
-              <span className="font-extrabold text-xs text-amber-700">{coins}</span>
+            <div className="flex items-center gap-1.5 bg-amber-950/30 border border-amber-900/30 px-2.5 py-1 rounded-xl">
+              <Coins className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+              <span className="font-extrabold text-[10px] md:text-xs text-amber-500">{coins}</span>
             </div>
 
             {/* Muted toggle */}
             <button 
               onClick={toggleMute}
-              className="p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-800 active:scale-95 transition-all cursor-pointer"
+              className="p-1.5 md:p-2 rounded-xl bg-indigo-950/20 border border-indigo-900/30 hover:bg-indigo-900/40 text-indigo-400 hover:text-indigo-200 active:scale-95 transition-all cursor-pointer"
               title={isMuted ? "Unmute sounds" : "Mute sounds"}
             >
-              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              {isMuted ? <VolumeX className="w-3.5 h-3.5 md:w-4 md:h-4" /> : <Volume2 className="w-3.5 h-3.5 md:w-4 md:h-4" />}
             </button>
 
             {/* Exit Close button */}
             <button 
               onClick={onClose}
-              className="p-2 rounded-xl bg-rose-50 border border-rose-100 hover:bg-rose-100 text-rose-500 active:scale-95 transition-all cursor-pointer"
+              className="p-1.5 md:p-2 rounded-xl bg-rose-950/20 border border-rose-900/30 hover:bg-rose-900/40 text-rose-450 hover:text-rose-250 active:scale-95 transition-all cursor-pointer"
               title="Close game"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5 md:w-4 md:h-4" />
             </button>
           </div>
         </div>
 
-        {/* Game Iframe viewport */}
-        <div className="flex-1 relative bg-slate-950 flex flex-col overflow-hidden">
+        {/* Absolute-positioned Game Iframe to prevent mobile layout scaling bugs */}
+        <div className="flex-1 relative bg-[#02000a] overflow-hidden">
           <iframe 
             ref={iframeRef}
             src="/anti-gravity/index.html" 
-            className="w-full h-full border-none" 
+            className="absolute inset-0 w-full h-full border-none" 
             title="Gravity Flipper Quantum Platformer"
             allow="autoplay; fullscreen"
             allowFullScreen

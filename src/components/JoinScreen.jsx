@@ -20,6 +20,7 @@ const DEEPLINK_MEMBERS = [
 
 export default function JoinScreen({ onJoin }) {
   const [selectedRole, setSelectedRole] = useState(null);
+  const [showChatRoomSelection, setShowChatRoomSelection] = useState(false);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -118,21 +119,7 @@ export default function JoinScreen({ onJoin }) {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-8 relative overflow-hidden font-sans">
-      {/* Floating Arcade Game Buttons in Top Right */}
-      <div className="absolute top-4 right-4 z-30 flex flex-wrap gap-2 justify-end">
-        <button
-          onClick={() => setShowGame('buggy')}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/85 backdrop-blur-md border border-slate-200 text-indigo-600 hover:bg-indigo-50/55 hover:border-indigo-400 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md cursor-pointer font-extrabold text-xs sm:text-sm"
-        >
-          🏎️ Play Buggy Game
-        </button>
-        <button
-          onClick={() => setShowGame('gravity')}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/85 backdrop-blur-md border border-slate-200 text-indigo-600 hover:bg-indigo-50/55 hover:border-indigo-400 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md cursor-pointer font-extrabold text-xs sm:text-sm animate-pulse"
-        >
-          🌀 Play Gravity Flipper
-        </button>
-      </div>
+
 
       {showGame === 'buggy' && <VehicleGame onClose={() => setShowGame(null)} />}
       {showGame === 'gravity' && <AntiGravityGame onClose={() => setShowGame(null)} />}
@@ -156,8 +143,67 @@ export default function JoinScreen({ onJoin }) {
 
         {/* Rebranded Light-Glass Panel */}
         <div className="glass-panel-glow rounded-3xl p-5 sm:p-8 space-y-6">
-          {!selectedRole ? (
+          {!showChatRoomSelection ? (
+            /* DUAL-CARD PORTAL LAYOUT (New Home Screen View) */
             <div className="space-y-4">
+              <h2 className="text-xs font-extrabold tracking-wider text-indigo-650 uppercase text-center sm:text-left">
+                Select Your Entrance Portal
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Chat Room Card */}
+                <button
+                  type="button"
+                  onClick={() => setShowChatRoomSelection(true)}
+                  className="group relative flex flex-col items-center text-center p-6 rounded-2xl bg-white/60 border border-slate-100 hover:border-indigo-400 hover:bg-indigo-50/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer shadow-sm shadow-slate-100/50"
+                >
+                  <div className="h-14 w-14 rounded-2xl bg-indigo-50 group-hover:bg-indigo-100/40 text-2xl flex items-center justify-center mb-4 transition-colors">
+                    💬
+                  </div>
+                  <h3 className="font-extrabold text-slate-800 text-base md:text-lg group-hover:text-indigo-650 transition-colors">
+                    DeepLink Chat Room
+                  </h3>
+                  <p className="text-2xs sm:text-xs text-slate-500 mt-2 max-w-[200px] leading-relaxed">
+                    Verify secure link, claim your identity, and connect with friends instantly.
+                  </p>
+                  <div className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-indigo-650 group-hover:translate-x-1 transition-transform">
+                    Enter Portal &rarr;
+                  </div>
+                </button>
+
+                {/* Gravity Flipper Game Card */}
+                <button
+                  type="button"
+                  onClick={() => setShowGame('gravity')}
+                  className="group relative flex flex-col items-center text-center p-6 rounded-2xl bg-white/60 border border-slate-100 hover:border-indigo-400 hover:bg-indigo-50/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer shadow-sm shadow-slate-100/50 animate-pulse-glow"
+                >
+                  <div className="h-14 w-14 rounded-2xl bg-indigo-50 group-hover:bg-indigo-100/40 text-2xl flex items-center justify-center mb-4 transition-colors">
+                    🌀
+                  </div>
+                  <h3 className="font-extrabold text-slate-800 text-base md:text-lg group-hover:text-indigo-650 transition-colors">
+                    Gravity Flipper 2D
+                  </h3>
+                  <p className="text-2xs sm:text-xs text-slate-500 mt-2 max-w-[200px] leading-relaxed">
+                    Test your reflexes! Flip gravity, collect coins, and run through quantum blocks.
+                  </p>
+                  <div className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-indigo-650 group-hover:translate-x-1 transition-transform">
+                    Play Arcade &rarr;
+                  </div>
+                </button>
+              </div>
+            </div>
+          ) : !selectedRole ? (
+            /* CHARACTER SELECTION GRID (Shown after entering Chat Room) */
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowChatRoomSelection(false)}
+                  className="text-xs text-indigo-600 hover:text-indigo-700 font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  ← Back to Main Menu
+                </button>
+                <span className="text-2xs text-slate-400 font-semibold uppercase tracking-wider">Step 1 of 2</span>
+              </div>
               <h2 className="text-xs font-extrabold tracking-wider text-indigo-600 uppercase">
                 1. Select Your Friend Identity
               </h2>
@@ -184,10 +230,12 @@ export default function JoinScreen({ onJoin }) {
               </div>
             </div>
           ) : (
+            /* PASSCODE SECURITY ENTRY VIEW */
             <div className="space-y-4">
               {/* Back Button */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <button
+                  type="button"
                   onClick={() => setSelectedRole(null)}
                   className="text-xs text-indigo-600 hover:text-indigo-700 font-bold flex items-center gap-1 transition-colors cursor-pointer"
                 >
